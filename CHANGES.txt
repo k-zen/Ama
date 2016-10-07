@@ -1,0 +1,11 @@
+=================== Release 0.1 P1 XX/XX/2016 =====================
+Descripción
+    -- Primer prototipo de la librería.
+Cambios
+    -- 05/10/2016
+        Modificado la estructura del proyecto. Agregado soporte para *setuptools*.
+        Agregado soporte para funcion principal con parametros.
+    -- 04/10/2016
+        Agregado nuevos metodos a la clase *Processor*.
+    -- 29/09/2016
+        Agregado clase *Processor*, la cual seria el punto de entrada para el procesamiento de datos.
