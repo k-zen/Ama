@@ -3,9 +3,9 @@
 """
 Clase perteneciente al módulo de procesamiento de datos e inferencias Ama.
 
-.. module:: ama
+.. module:: show_data
    :platform: Unix
-   :synopsis: Funciones útiles para el procesamiento de datos de radar.
+   :synopsis: Funciones útiles para la visualización de datos.
 
 .. moduleauthor:: Andreas P. Koenzen <akc@apkc.net>
 """

@@ -3,7 +3,7 @@
 """
 Clase perteneciente al módulo de procesamiento de datos e inferencias Ama.
 
-.. module:: ama
+.. module:: processor
    :platform: Unix
    :synopsis: Funciones útiles para el procesamiento de datos de radar.
 
@@ -65,8 +65,8 @@ class Processor:
         Todo:
         * Agregar soporte para Excepciones.
 
-        :param filename: El nombre del archivo a procesar. El formato debe ser
-        *WRADLIB_DATA/<filename>*.
+        :param filename: El nombre del archivo a procesar. El formato debe ser \
+            *WRADLIB_DATA/<filename>*.
 
         :return: Los datos de radar procesados.
         """

@@ -3,9 +3,9 @@
 """
 Clase perteneciente al módulo de procesamiento de datos e inferencias Ama.
 
-.. module:: ama
+.. module:: utils
    :platform: Unix
-   :synopsis: Funciones útiles para el procesamiento de datos de radar.
+   :synopsis: Funciones útiles varias.
 
 .. moduleauthor:: Andreas P. Koenzen <akc@apkc.net>
 """
@@ -57,8 +57,8 @@ class Utils:
 
         :param origin:          El directorio origen de datos.
         :param qt:              La cantidad de archivos a procesar.
-        :param file_size_limit: El tamaño máximo de un archivo a procesar.
-        Los archivos que sobrepasen el tamaño serán obviados.
+        :param file_size_limit: El tamaño máximo de un archivo a procesar. \
+            Los archivos que sobrepasen el tamaño serán obviados.
 
         :return: Una lista con todos los archivos a procesar.
         """
