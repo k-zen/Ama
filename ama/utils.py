@@ -30,14 +30,14 @@ class Colors:
     def __init__(self):
         pass
 
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+    HEADER = "\033[95m"
+    OKBLUE = "\033[94m"
+    OKGREEN = "\033[92m"
+    WARNING = "\033[93m"
+    FAIL = "\033[91m"
+    ENDC = "\033[0m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
 
 
 class Utils:
@@ -66,17 +66,17 @@ class Utils:
         counter = 0
 
         for filename in os.listdir(origin):
-            if filename.endswith('.mvol'):
-                full_path = os.path.join(origin, filename)
-                relative_path = os.path.relpath(full_path, os.environ['WRADLIB_DATA'])
-
-                if qt != -1:
-                    counter += 1
-
-                if os.stat(full_path).st_size < file_size_limit:
-                    matches.append(relative_path)
-
+            if filename.endswith(".mvol"):
                 if qt != -1 and counter >= qt:
                     break
+
+                full_path = os.path.join(origin, filename)
+                relative_path = os.path.relpath(full_path, os.environ["WRADLIB_DATA"])
+
+                if os.stat(full_path).st_size < file_size_limit:
+                    if qt != -1:
+                        counter += 1
+
+                    matches.append(relative_path)
 
         return matches

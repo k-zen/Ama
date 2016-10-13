@@ -9,7 +9,7 @@ setup(
     url='http://apkc.net/_4',
     license='LICENSE.txt',
     description='Libreria para procesar datos de radar.',
-    long_description=open('./README.txt').read(),
+    long_description=open('README.txt').read(),
     entry_points={'console_scripts': ['ama = ama.__main__:main']},
     install_requires=[
         "wradlib >= 0.9",

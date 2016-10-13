@@ -64,7 +64,7 @@ class Usage(Exception):
 
 
 def usage():
-    print sys.exit(__doc__)
+    print(sys.exit(__doc__))
 
 
 def main(argv=None):
@@ -79,7 +79,7 @@ def main(argv=None):
         try:
             opts, args = getopt.getopt(
                 argv[1:],
-                "t:d:f",
+                "t:d:f:",
                 [
                     "help",
                     "process-reflectivity",
@@ -94,8 +94,11 @@ def main(argv=None):
         except getopt.error, msg:
             raise Usage(msg)
 
+        # DEBUG:
+        # print opts
+
         for opt, arg in opts:
-            if opt == '--help':
+            if opt == "--help":
                 usage()
             elif opt == "--process-reflectivity":
                 command = 1
@@ -118,27 +121,27 @@ def main(argv=None):
         # tomar la decision.
         if command == 1:
             if not target and not destination:
-                print Colors.FAIL + "\tERROR: Origen y destino no definidos." + Colors.ENDC
+                print(Colors.FAIL + "\tERROR: Origen y destino no definidos." + Colors.ENDC)
                 return 2
             Processor().process_directory_generate_raw_images_from_reflectivity(target, destination)
         elif command == 2:
             if not target and not destination:
-                print Colors.FAIL + "\tERROR: Origen y destino no definidos." + Colors.ENDC
+                print(Colors.FAIL + "\tERROR: Origen y destino no definidos." + Colors.ENDC)
                 return 2
             Processor().process_directory_generate_raw_images_from_rainfall_intensity(target, destination)
         elif command == 3:
             if not filename and not destination:
-                print Colors.FAIL + "\tERROR: Nombre de archivo y destino no definidos." + Colors.ENDC
+                print(Colors.FAIL + "\tERROR: Nombre de archivo y destino no definidos." + Colors.ENDC)
                 return 2
             Processor().correlate_dbz_to_location(filename, destination)
         elif command == 4:
             if not target:
-                print Colors.FAIL + "\tERROR: Origen no definido." + Colors.ENDC
+                print(Colors.FAIL + "\tERROR: Origen no definido." + Colors.ENDC)
                 return 2
             ShowData.show_data(target)
     except Usage, err:
-        print >> sys.stderr, Colors.FAIL + "\tERROR: {0}".format(err.msg) + Colors.ENDC
-        print >> sys.stderr, Colors.HEADER + "\tINFO: para ayuda utilizar --help" + Colors.ENDC
+        sys.stderr.write(Colors.FAIL + "\tERROR: {0}".format(err.msg) + Colors.ENDC)
+        sys.stderr.write(Colors.HEADER + "\tINFO: para ayuda utilizar --help" + Colors.ENDC)
         return 2
 
 

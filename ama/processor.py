@@ -75,8 +75,7 @@ class Processor:
         data, metadata = wrl.io.read_GAMIC_hdf5(filename)
         end = time.time()
 
-        print Colors.OKGREEN + "\tINFO: Procesado \"{0}\" en {1} segundos.".format(filename,
-                                                                                   (end - start)) + Colors.ENDC
+        print(Colors.OKGREEN + "\tINFO: Procesado \"{0}\" en {1} segundos.".format(filename, (end - start)) + Colors.ENDC)
 
         return data, metadata
 
@@ -94,22 +93,22 @@ class Processor:
 
         :return: void
         """
-        origin = os.environ["WRADLIB_DATA"] + origin
-        destination = os.environ["AMA_EXPORT_DATA"] + destination
+        origin = os.path.join(os.environ["WRADLIB_DATA"], origin)
+        destination = os.path.join(os.environ["AMA_EXPORT_DATA"], destination)
         matches = Utils.files_for_processing(origin, self.QT, self.FILE_SIZE_LIMIT)
 
         if len(matches) > 0:
             for item in matches:
                 data, metadata = Processor.process(item)
                 fig = pl.figure(figsize=(10, 8))
-                wrl.vis.plot_cg_ppi(data[u'SCAN0'][u'Z']['data'], fig=fig)
+                wrl.vis.plot_cg_ppi(data[u"SCAN0"][u"Z"]["data"], fig=fig)
 
                 if not os.path.exists(destination):
-                    print Colors.WARNING + "\tWARN: Destino no existe, creando ..." + Colors.ENDC
+                    print(Colors.WARNING + "\tWARN: Destino no existe, creando ..." + Colors.ENDC)
                     os.makedirs(destination)
 
                 clean_filename = os.path.splitext(ntpath.basename(item))[0]
-                pl.savefig(destination + '/' + clean_filename + '.png', bbox_inches='tight')
+                pl.savefig(os.path.join(destination, (clean_filename + ".png")), bbox_inches="tight")
                 plt.close(fig)
 
             if self.DEBUG == 1:
@@ -118,13 +117,13 @@ class Processor:
                 print(data)
 
                 for index, item in enumerate(matches):
-                    print "{0} => {1}".format(index, item)
+                    print("{0} => {1}".format(index, item))
 
                 for index, item in enumerate(matches):
-                    print "{0} => {1}".format(index, os.path.splitext(ntpath.basename(item))[0])
+                    print("{0} => {1}".format(index, os.path.splitext(ntpath.basename(item))[0]))
         else:
-            print Colors.FAIL + "\tERROR: No hay archivos para procesar en *{0}*!".format(
-                os.environ["WRADLIB_DATA"] + origin) + Colors.ENDC
+            print(Colors.FAIL + "\tERROR: No hay archivos para procesar en *{0}*!".format(
+                os.environ["WRADLIB_DATA"] + origin) + Colors.ENDC)
 
     def process_directory_generate_raw_images_from_rainfall_intensity(self, origin, destination):
         """
@@ -140,15 +139,17 @@ class Processor:
 
         :return: void
         """
-        origin = os.environ["WRADLIB_DATA"] + origin
-        destination = os.environ["AMA_EXPORT_DATA"] + destination
+        origin = os.path.join(os.environ["WRADLIB_DATA"], origin)
+        destination = os.path.join(os.environ["AMA_EXPORT_DATA"], destination)
         matches = Utils.files_for_processing(origin, self.QT, self.FILE_SIZE_LIMIT)
 
         if len(matches) > 0:
             for item in matches:
                 data, metadata = Processor.process(item)
+
+                # TODO: Corregir este problema. Se debe armar un vector con los datos procesados de forma individual.
                 # Convertir a intensidad de lluvia (mm/h)
-                Z = wrl.trafo.idecibel(data[u'SCAN0'][u'Z']['data'])
+                Z = wrl.trafo.idecibel(data[u"SCAN0"][u"Z"]["data"])
                 R = wrl.zr.z2r(Z, a=200., b=1.6)
                 # Convertir a profundidad de lluvia (mm)
                 depth = wrl.trafo.r2depth(R, 360)
@@ -157,8 +158,7 @@ class Processor:
                 ax, cf = wrl.vis.plot_ppi(depth, cmap="spectral")
                 pl.xlabel("Este del Radar (km)")
                 pl.ylabel("Norte del Radar (km)")
-                pl.title(
-                    "Radar DINAC Fac. Veterinaria UNA\n6 min. profundidad de lluvia, " + metadata[u'SCAN0']['Time'])
+                pl.title("Radar DINAC Fac. Veterinaria UNA\n6 min. profundidad de lluvia, " + metadata[u"SCAN0"]["Time"])
                 cb = pl.colorbar(cf, shrink=0.8)
                 cb.set_label("mm")
                 pl.xlim(-128, 128)
@@ -166,11 +166,11 @@ class Processor:
                 pl.grid(color="grey")
 
                 if not os.path.exists(destination):
-                    print Colors.WARNING + "\tWARN: Destino no existe, creando ..." + Colors.ENDC
+                    print(Colors.WARNING + "\tWARN: Destino no existe, creando ..." + Colors.ENDC)
                     os.makedirs(destination)
 
                 clean_filename = os.path.splitext(ntpath.basename(item))[0]
-                pl.savefig(destination + '/' + clean_filename + '.png', bbox_inches='tight')
+                pl.savefig(os.path.join(destination, (clean_filename + ".png")), bbox_inches="tight")
                 plt.close(fig)
 
             if self.DEBUG == 1:
@@ -179,57 +179,80 @@ class Processor:
                 print(data)
 
                 for index, item in enumerate(matches):
-                    print "{0} => {1}".format(index, item)
+                    print("{0} => {1}".format(index, item))
 
                 for index, item in enumerate(matches):
-                    print "{0} => {1}".format(index, os.path.splitext(ntpath.basename(item))[0])
+                    print("{0} => {1}".format(index, os.path.splitext(ntpath.basename(item))[0]))
         else:
-            print Colors.FAIL + "ERROR: No hay archivos para procesar en *{0}*!".format(
-                os.environ["WRADLIB_DATA"] + origin) + Colors.ENDC
+            print(Colors.FAIL + "ERROR: No hay archivos para procesar en *{0}*!".format(
+                os.environ["WRADLIB_DATA"] + origin) + Colors.ENDC)
 
-    def correlate_dbz_to_location(self, filename, destination):
+    def correlate_dbz_to_location(self, filename, destination, report_to_mqtt=False):
         """
         Esta funcion realiza la correlacion entre dbZ y sus coordenadas geograficas en el mapa.
+
+        Formato del archivo a generar:
+        ==============================
+        Se genera un archivo *.ama, el cual no es nada mas que un archivo de texto separado por
+        lineas, en el cual cada registro a su vez se encuentra separado por comas.
+
+        Ejemplo:
+            dbZ,rainfall_intensity,latitude:longitude
 
         Todo:
         * Agregar soporte para Excepciones.
         * Agregar soporte para escribir resultado a archivo.
 
         :param filename: El nombre del archivo a procesar.
+        :param destination: El nombre del directorio en donde colocar los archivos resultantes.
+        :param report_to_mqtt: Si debemos enviar los resultados a un tópico MQTT.
 
         :return: void
         """
         start = time.time()
         cdata = ""
+        destination = os.path.join(os.environ["AMA_EXPORT_DATA"], destination, (os.path.splitext(ntpath.basename(filename))[0] + ".ama"))
         data, metadata = Processor.process(filename)
 
-        client = mqtt.Client()
-        client.connect("devel.apkc.net", 1883, 60)
+        if report_to_mqtt:
+            client = mqtt.Client()
+            client.connect("devel.apkc.net", 1883, 60)
 
-        latitude = float(metadata['VOL']['Latitude'])
-        longitude = float(metadata['VOL']['Longitude'])
+        file = open(destination, "w")
 
-        for (r, c), value in np.ndenumerate(data[u'SCAN0'][u'Z']['data']):
+        latitude = float(metadata["VOL"]["Latitude"])
+        longitude = float(metadata["VOL"]["Longitude"])
+
+        for (r, c), value in np.ndenumerate(data[u"SCAN0"][u"Z"]["data"]):
             if value > -64.:
-                rng = metadata[u'SCAN0']['r'][c]
-                azi = metadata[u'SCAN0']['az'][r]
+                rng = metadata[u"SCAN0"]["r"][c]
+                azi = metadata[u"SCAN0"]["az"][r]
                 z = wrl.trafo.idecibel(value)
                 ri = wrl.zr.z2r(z, a=200., b=1.6)
                 lat, lon = wrl.georef.polar2lonlat(rng, azi, (latitude, longitude))
 
                 if haversine((latitude, longitude), (lat, lon)) < 20 and ri > .25:
                     line = "{0:.8f},{1},{2:.8f}:{3:.8f}".format(value, ri, lat, lon)
-                    client.publish("ama-export-data", line, 2)
-                    client.loop(1)
+
+                    file.write(line + "\n")
+
+                    if report_to_mqtt:
+                        client.publish("ama-export-data", line, 2)
+                        client.loop(1)
+
                     cdata += line
 
                     if self.DEBUG == 1:
-                        print line
+                        print(line)
 
-        client.disconnect()
+        if report_to_mqtt:
+            client.disconnect()
+
+        file.close()
+
         end = time.time()
 
         if self.DEBUG == 1:
-            print Colors.HEADER + "---" + Colors.ENDC
-            print Colors.HEADER + "Tamaño Datos Enviados: {0}kb".format(sys.getsizeof(cdata) / 1024) + Colors.ENDC
-            print Colors.HEADER + "Tiempo de Procesamiento: {0:.1f} minutos".format((end - start) / 60) + Colors.ENDC
+            print(Colors.HEADER + "---" + Colors.ENDC)
+            print(Colors.HEADER + "Tamaño Datos Enviados: {0}kb".format(sys.getsizeof(cdata) / 1024) + Colors.ENDC)
+            print(Colors.HEADER + "Tiempo de Procesamiento: {0:.1f} minutos".format((end - start) / 60) + Colors.ENDC)
