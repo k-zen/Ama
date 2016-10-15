@@ -10,31 +10,36 @@ Uso:
 ====
 ama [--process-reflectivity] [-t=target] [-d=destination]
     [--process-rainfall] [-t=target] [-d=destination]
-    [--correlate-dbz-location] [-f=filename] [-d=destination]
+    [--correlate-dbz-location] [-f=filename] [-d=destination] [--filter] [-r=50]
     [--show-data] [-t=target]
     [--run]
 
 Opciones:
 =========
-    --process-reflectivity      procesa un directorio de datos de forma recursiva
-                                y genera imagenes de reflectividad
-    --process-rainfall          procesa un directorio de datos de forma recursiva
-                                y genera imagenes de profundidad de lluvia
-    --correlate-dbz-location    procesa un archivo de datos y correlaciona dbZ con
-                                coordenadas geograficas
-    --show-data                 muestra los datos en pantalla (DEBUG)
-    --run                       lanza un proceso que escucha por el ultimo archivo
-                                generado por el radar, lo procesa y envia los datos
-                                al servidor *devel.apkc.net*
+    --process-reflectivity   procesa un directorio de datos de forma recursiva
+                             y genera imagenes de reflectividad
+    --process-rainfall       procesa un directorio de datos de forma recursiva
+                             y genera imagenes de profundidad de lluvia
+    --correlate-dbz-location procesa un archivo de datos y correlaciona dbZ con
+                             coordenadas geograficas
+    --show-data              muestra los datos en pantalla (DEBUG)
+    --run                    lanza un proceso que escucha por el ultimo archivo
+                             generado por el radar, lo procesa y envia los datos
+                             al servidor *devel.apkc.net*
 
     ---
 
-    -t  El PATH al directorio de datos de radar. Tomar en cuenta que se parte siempre
-        desde la variable de entorno WRADLIB_DATA
-    -d  El PATH al directorio donde se guardaran los datos procesados. Tomar en cuenta
-        que se parte siempre desde la variable de entorno AMA_EXPORT_DATA
-    -f  El nombre del archivo a procesar. Tomar en cuenta que se parte siempre
-        desde la variable de entorno WRADLIB_DATA
+    -t El PATH al directorio de datos de radar. Tomar en cuenta que se parte siempre
+       desde la variable de entorno WRADLIB_DATA
+    -d El PATH al directorio donde se guardaran los datos procesados. Tomar en cuenta
+       que se parte siempre desde la variable de entorno AMA_EXPORT_DATA
+    -f El nombre del archivo a procesar. Tomar en cuenta que se parte siempre
+       desde la variable de entorno WRADLIB_DATA
+    -r El valor del radio para los filtros. En kilometros desde la ubicación del radar.
+
+    ---
+
+    -filter Si deseamos filtrar los datos o se procesa el archivo por completo.
 
 Banderas:
 =========
@@ -72,6 +77,8 @@ def main(argv=None):
     target = ""
     destination = ""
     filename = ""
+    use_filter = False
+    radius = 50
 
     if argv is None:
         argv = sys.argv
@@ -79,7 +86,7 @@ def main(argv=None):
         try:
             opts, args = getopt.getopt(
                 argv[1:],
-                "t:d:f:",
+                "t:d:f:r:",
                 [
                     "help",
                     "process-reflectivity",
@@ -87,6 +94,7 @@ def main(argv=None):
                     "correlate-dbz-location",
                     "show-data",
                     "run",
+                    "filter"
                 ]
             )
             if not opts:
@@ -117,6 +125,10 @@ def main(argv=None):
                 destination = arg
             elif opt == "-f":
                 filename = arg
+            elif opt == "--filter":
+                use_filter = True
+            elif opt == "-r":
+                radius = arg
 
         # tomar la decision.
         if command == 1:
@@ -133,7 +145,7 @@ def main(argv=None):
             if not filename and not destination:
                 print(Colors.FAIL + "\tERROR: Nombre de archivo y destino no definidos." + Colors.ENDC)
                 return 2
-            Processor().correlate_dbz_to_location(filename, destination)
+            Processor().correlate_dbz_to_location(filename, destination, False, use_filter, radius)
         elif command == 4:
             if not target:
                 print(Colors.FAIL + "\tERROR: Origen no definido." + Colors.ENDC)

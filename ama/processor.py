@@ -51,7 +51,7 @@ class Processor:
     """
     int: Tamaño máximo de archivos a procesar. Todos los archivos que sobrepasen este tamaño serán obviados.
     """
-    QT = 4
+    QT = -1
     """
     int: La cantidad de archivos a procesar dentro de un directorio.
     """
@@ -148,19 +148,16 @@ class Processor:
                 data, metadata = Processor.process(item)
 
                 # TODO: Corregir este problema. Se debe armar un vector con los datos procesados de forma individual.
-                # Convertir a intensidad de lluvia (mm/h)
                 Z = wrl.trafo.idecibel(data[u"SCAN0"][u"Z"]["data"])
                 R = wrl.zr.z2r(Z, a=200., b=1.6)
-                # Convertir a profundidad de lluvia (mm)
-                depth = wrl.trafo.r2depth(R, 360)
 
                 fig = pl.figure(figsize=(10, 8))
-                ax, cf = wrl.vis.plot_ppi(depth, cmap="spectral")
+                ax, cf = wrl.vis.plot_ppi(R, cmap="spectral")
                 pl.xlabel("Este del Radar (km)")
                 pl.ylabel("Norte del Radar (km)")
                 pl.title("Radar DINAC Fac. Veterinaria UNA\n6 min. profundidad de lluvia, " + metadata[u"SCAN0"]["Time"])
                 cb = pl.colorbar(cf, shrink=0.8)
-                cb.set_label("mm")
+                cb.set_label("mm/h")
                 pl.xlim(-128, 128)
                 pl.ylim(-128, 128)
                 pl.grid(color="grey")
@@ -187,7 +184,7 @@ class Processor:
             print(Colors.FAIL + "ERROR: No hay archivos para procesar en *{0}*!".format(
                 os.environ["WRADLIB_DATA"] + origin) + Colors.ENDC)
 
-    def correlate_dbz_to_location(self, filename, destination, report_to_mqtt=False):
+    def correlate_dbz_to_location(self, filename, destination, report_to_mqtt=False, use_filter=False, radius=50):
         """
         Esta funcion realiza la correlacion entre dbZ y sus coordenadas geograficas en el mapa.
 
@@ -206,6 +203,10 @@ class Processor:
         :param filename: El nombre del archivo a procesar.
         :param destination: El nombre del directorio en donde colocar los archivos resultantes.
         :param report_to_mqtt: Si debemos enviar los resultados a un tópico MQTT.
+        :param use_filter: Si los filtros deben estar habilitados.
+        :param radius: El radio para los filtros. En km desde la ubicación del radar. Todos \
+            los puntos que se encuentren dentro de este radio serán incluidos en el archivo \
+            resultante.
 
         :return: void
         """
@@ -231,8 +232,8 @@ class Processor:
                 ri = wrl.zr.z2r(z, a=200., b=1.6)
                 lat, lon = wrl.georef.polar2lonlat(rng, azi, (latitude, longitude))
 
-                if haversine((latitude, longitude), (lat, lon)) < 20 and ri > .25:
-                    line = "{0:.8f},{1},{2:.8f}:{3:.8f}".format(value, ri, lat, lon)
+                if (haversine((latitude, longitude), (lat, lon)) < radius and ri > 5) or not use_filter:
+                    line = "{0:.2f},{1:.5f}:{2:.5f}".format(ri, lat, lon)
 
                     file.write(line + "\n")
 
