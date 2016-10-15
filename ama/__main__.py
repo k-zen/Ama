@@ -128,7 +128,7 @@ def main(argv=None):
             elif opt == "--filter":
                 use_filter = True
             elif opt == "-r":
-                radius = arg
+                radius = int(arg)
 
         # tomar la decision.
         if command == 1:
