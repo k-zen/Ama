@@ -230,7 +230,7 @@ class Processor:
                 azi = metadata[u"SCAN0"]["az"][r]
                 z = wrl.trafo.idecibel(value)
                 ri = wrl.zr.z2r(z, a=200., b=1.6)
-                lat, lon = wrl.georef.polar2lonlat(rng, azi, (latitude, longitude))
+                lon, lat = wrl.georef.polar2lonlat(rng, azi, (longitude, latitude))
 
                 if (haversine((latitude, longitude), (lat, lon)) < radius and ri > 5) or not use_filter:
                     line = "{0:.2f},{1:.5f}:{2:.5f}".format(ri, lat, lon)
