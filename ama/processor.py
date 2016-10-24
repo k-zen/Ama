@@ -214,6 +214,7 @@ class Processor:
         cdata = ""
         destination = os.path.join(os.environ["AMA_EXPORT_DATA"], destination, (os.path.splitext(ntpath.basename(filename))[0] + ".ama"))
         data, metadata = Processor.process(filename)
+        clean_data = []
 
         if report_to_mqtt:
             client = mqtt.Client()
@@ -221,8 +222,8 @@ class Processor:
 
         file = open(destination, "w")
 
-        latitude = float(metadata["VOL"]["Latitude"])
-        longitude = float(metadata["VOL"]["Longitude"])
+        radar_latitude = float(metadata["VOL"]["Latitude"])
+        radar_longitude = float(metadata["VOL"]["Longitude"])
 
         for (r, c), value in np.ndenumerate(data[u"SCAN0"][u"Z"]["data"]):
             if value > -64.:
@@ -230,21 +231,29 @@ class Processor:
                 azi = metadata[u"SCAN0"]["az"][r]
                 z = wrl.trafo.idecibel(value)
                 ri = wrl.zr.z2r(z, a=200., b=1.6)
-                lon, lat = wrl.georef.polar2lonlat(rng, azi, (longitude, latitude))
+                lon, lat = wrl.georef.polar2lonlat(rng, azi, (radar_longitude, radar_latitude))
 
-                if (haversine((latitude, longitude), (lat, lon)) < radius and ri > 5) or not use_filter:
-                    line = "{0:.2f},{1:.5f}:{2:.5f}".format(ri, lat, lon)
+                # realizar los redondeos
+                rainfall_intensity = float("{0:.2f}".format(ri))
+                latitude = float("{0:.5f}".format(lat))
+                longitude = float("{0:.5f}".format(lon))
 
-                    file.write(line + "\n")
+                if (haversine((radar_latitude, radar_longitude), (latitude, longitude)) < radius and ri > 5) or not use_filter:
+                    clean_data.append((rainfall_intensity, latitude, longitude))
 
-                    if report_to_mqtt:
-                        client.publish("ama-export-data", line, 2)
-                        client.loop(1)
+        for i, (ri, lat, lon) in enumerate(clean_data):
+            line = "{0:.2f},{1:.5f}:{2:.5f}".format(ri, lat, lon)
 
-                    cdata += line
+            file.write(line + "\n")
 
-                    if self.DEBUG == 1:
-                        print(line)
+            if report_to_mqtt:
+                client.publish("ama-export-data", line, 2)
+                client.loop(1)
+
+            cdata += line
+
+            if self.DEBUG == 1:
+                print(line)
 
         if report_to_mqtt:
             client.disconnect()
