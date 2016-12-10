@@ -10,7 +10,7 @@ Uso:
 ====
 ama [--process-reflectivity] [-t=target] [-d=destination]
     [--process-rainfall] [-t=target] [-d=destination]
-    [--correlate-dbz-location] [-f=filename] [-d=destination] [--filter] [-r=50]
+    [--correlate-dbz-location] [-f=filename] [-d=destination] [--filter] [-r=50] [--all]
     [--show-data] [-t=target]
     [--run]
 
@@ -39,7 +39,8 @@ Opciones:
 
     ---
 
-    -filter Si deseamos filtrar los datos o se procesa el archivo por completo.
+    --filter Si deseamos filtrar los datos o se procesa el archivo por completo.
+    --all    Procesar todos los archivos en un directorio.
 
 Banderas:
 =========
@@ -79,6 +80,7 @@ def main(argv=None):
     filename = ""
     use_filter = False
     radius = 50
+    process_all = False
 
     if argv is None:
         argv = sys.argv
@@ -94,7 +96,8 @@ def main(argv=None):
                     "correlate-dbz-location",
                     "show-data",
                     "run",
-                    "filter"
+                    "filter",
+                    "all"
                 ]
             )
             if not opts:
@@ -129,6 +132,8 @@ def main(argv=None):
                 use_filter = True
             elif opt == "-r":
                 radius = int(arg)
+            elif opt == "--all":
+                process_all = True
 
         # tomar la decision.
         if command == 1:
@@ -145,7 +150,7 @@ def main(argv=None):
             if not filename and not destination:
                 print(Colors.FAIL + "\tERROR: Nombre de archivo y destino no definidos." + Colors.ENDC)
                 return 2
-            Processor().correlate_dbz_to_location(filename, destination, False, use_filter, radius)
+            Processor().correlate_dbz_to_location(filename, destination, process_all, False, use_filter, radius)
         elif command == 4:
             if not target:
                 print(Colors.FAIL + "\tERROR: Origen no definido." + Colors.ENDC)

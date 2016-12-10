@@ -147,7 +147,6 @@ class Processor:
             for item in matches:
                 data, metadata = Processor.process(item)
 
-                # TODO: Corregir este problema. Se debe armar un vector con los datos procesados de forma individual.
                 Z = wrl.trafo.idecibel(data[u"SCAN0"][u"Z"]["data"])
                 R = wrl.zr.z2r(Z, a=200., b=1.6)
 
@@ -184,7 +183,7 @@ class Processor:
             print(Colors.FAIL + "ERROR: No hay archivos para procesar en *{0}*!".format(
                 os.environ["WRADLIB_DATA"] + origin) + Colors.ENDC)
 
-    def correlate_dbz_to_location(self, filename, destination, report_to_mqtt=False, use_filter=False, radius=50):
+    def single_correlate_dbz_to_location(self, filename, destination, report_to_mqtt=False, use_filter=False, radius=50):
         """
         Esta funcion realiza la correlacion entre dbZ y sus coordenadas geograficas en el mapa.
 
@@ -266,3 +265,42 @@ class Processor:
             print(Colors.HEADER + "---" + Colors.ENDC)
             print(Colors.HEADER + "Tamaño Datos Enviados: {0}kb".format(sys.getsizeof(cdata) / 1024) + Colors.ENDC)
             print(Colors.HEADER + "Tiempo de Procesamiento: {0:.1f} minutos".format((end - start) / 60) + Colors.ENDC)
+
+    def correlate_dbz_to_location(self, filename, destination, process_all, report_to_mqtt=False, use_filter=False, radius=50):
+        """
+        Esta funcion realiza la correlacion entre dbZ y sus coordenadas geograficas en el mapa.
+
+        Formato del archivo a generar:
+        ==============================
+        Se genera un archivo *.ama, el cual no es nada mas que un archivo de texto separado por
+        lineas, en el cual cada registro a su vez se encuentra separado por comas.
+
+        Ejemplo:
+            dbZ,rainfall_intensity,latitude:longitude
+
+        Todo:
+        * Agregar soporte para Excepciones.
+        * Agregar soporte para escribir resultado a archivo.
+
+        :param filename: El nombre del archivo a procesar.
+        :param destination: El nombre del directorio en donde colocar los archivos resultantes.
+        :param report_to_mqtt: Si debemos enviar los resultados a un tópico MQTT.
+        :param use_filter: Si los filtros deben estar habilitados.
+        :param radius: El radio para los filtros. En km desde la ubicación del radar. Todos \
+            los puntos que se encuentren dentro de este radio serán incluidos en el archivo \
+            resultante.
+        :param process_all Procesar todos los archivos en la carpeta donde se encuentra el archivo \
+            pasado como *filename*.
+
+        :return: void
+        """
+        if process_all:
+            origin = os.path.join(os.environ["WRADLIB_DATA"], os.path.split(filename)[0])
+            destination = os.path.join(os.environ["AMA_EXPORT_DATA"], destination)
+            matches = Utils.files_for_processing(origin, self.QT, self.FILE_SIZE_LIMIT)
+
+            if len(matches) > 0:
+                for item in matches:
+                    self.single_correlate_dbz_to_location(item, destination, report_to_mqtt, use_filter, radius)
+        else:
+            self.single_correlate_dbz_to_location(filename, destination, report_to_mqtt, use_filter, radius)
