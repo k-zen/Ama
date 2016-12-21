@@ -233,7 +233,7 @@ class Processor:
                 lon, lat = wrl.georef.polar2lonlat(rng, azi, (radar_longitude, radar_latitude))
 
                 # realizar los redondeos
-                rainfall_intensity = float("{0:.2f}".format(ri))
+                rainfall_intensity = int(round(ri))
                 latitude = float("{0:.5f}".format(lat))
                 longitude = float("{0:.5f}".format(lon))
 
@@ -241,7 +241,7 @@ class Processor:
                     clean_data.append((rainfall_intensity, latitude, longitude))
 
         for i, (ri, lat, lon) in enumerate(clean_data):
-            line = "{0:.2f},{1:.5f}:{2:.5f}".format(ri, lat, lon)
+            line = "{0:d},{1:.5f}:{2:.5f}".format(ri, lat, lon)
 
             file.write(line + "\n")
 
