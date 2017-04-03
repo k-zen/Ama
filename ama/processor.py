@@ -14,7 +14,6 @@ import wradlib as wrl
 import pylab as pl
 import matplotlib.pyplot as plt
 import numpy as np
-import paho.mqtt.client as mqtt
 import os
 import ntpath
 import time
@@ -183,7 +182,7 @@ class Processor:
             print(Colors.FAIL + "ERROR: No hay archivos para procesar en *{0}*!".format(
                 os.environ["WRADLIB_DATA"] + origin) + Colors.ENDC)
 
-    def single_correlate_dbz_to_location(self, filename, destination, report_to_mqtt=False, use_filter=False, radius=50):
+    def single_correlate_dbz_to_location(self, filename, destination, use_filter=False, radius=50):
         """
         Esta funcion realiza la correlacion entre dbZ y sus coordenadas geograficas en el mapa.
 
@@ -201,7 +200,6 @@ class Processor:
 
         :param filename: El nombre del archivo a procesar.
         :param destination: El nombre del directorio en donde colocar los archivos resultantes.
-        :param report_to_mqtt: Si debemos enviar los resultados a un tópico MQTT.
         :param use_filter: Si los filtros deben estar habilitados.
         :param radius: El radio para los filtros. En km desde la ubicación del radar. Todos \
             los puntos que se encuentren dentro de este radio serán incluidos en el archivo \
@@ -214,10 +212,6 @@ class Processor:
         destination = os.path.join(os.environ["AMA_EXPORT_DATA"], destination, (os.path.splitext(ntpath.basename(filename))[0] + ".ama"))
         data, metadata = Processor.process(filename)
         clean_data = []
-
-        if report_to_mqtt:
-            client = mqtt.Client()
-            client.connect("devel.apkc.net", 1883, 60)
 
         file = open(destination, "w")
 
@@ -245,17 +239,10 @@ class Processor:
 
             file.write(line + "\n")
 
-            if report_to_mqtt:
-                client.publish("ama-export-data", line, 2)
-                client.loop(1)
-
             cdata += line
 
             if self.DEBUG == 1:
                 print(line)
-
-        if report_to_mqtt:
-            client.disconnect()
 
         file.close()
 
@@ -266,7 +253,7 @@ class Processor:
             print(Colors.HEADER + "Tamaño Datos Enviados: {0}kb".format(sys.getsizeof(cdata) / 1024) + Colors.ENDC)
             print(Colors.HEADER + "Tiempo de Procesamiento: {0:.1f} minutos".format((end - start) / 60) + Colors.ENDC)
 
-    def correlate_dbz_to_location(self, filename, destination, process_all, report_to_mqtt=False, use_filter=False, radius=50):
+    def correlate_dbz_to_location(self, filename, destination, process_all, use_filter=False, radius=50):
         """
         Esta funcion realiza la correlacion entre dbZ y sus coordenadas geograficas en el mapa.
 
@@ -284,7 +271,6 @@ class Processor:
 
         :param filename: El nombre del archivo a procesar.
         :param destination: El nombre del directorio en donde colocar los archivos resultantes.
-        :param report_to_mqtt: Si debemos enviar los resultados a un tópico MQTT.
         :param use_filter: Si los filtros deben estar habilitados.
         :param radius: El radio para los filtros. En km desde la ubicación del radar. Todos \
             los puntos que se encuentren dentro de este radio serán incluidos en el archivo \
@@ -301,6 +287,6 @@ class Processor:
 
             if len(matches) > 0:
                 for item in matches:
-                    self.single_correlate_dbz_to_location(item, destination, report_to_mqtt, use_filter, radius)
+                    self.single_correlate_dbz_to_location(item, destination, use_filter, radius)
         else:
-            self.single_correlate_dbz_to_location(filename, destination, report_to_mqtt, use_filter, radius)
+            self.single_correlate_dbz_to_location(filename, destination, use_filter, radius)

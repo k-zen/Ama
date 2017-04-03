@@ -150,7 +150,7 @@ def main(argv=None):
             if not filename and not destination:
                 print(Colors.FAIL + "\tERROR: Nombre de archivo y destino no definidos." + Colors.ENDC)
                 return 2
-            Processor().correlate_dbz_to_location(filename, destination, process_all, False, use_filter, radius)
+            Processor().correlate_dbz_to_location(filename, destination, process_all, use_filter, radius)
         elif command == 4:
             if not target:
                 print(Colors.FAIL + "\tERROR: Origen no definido." + Colors.ENDC)
