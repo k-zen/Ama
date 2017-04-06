@@ -12,7 +12,7 @@ ama [--process-reflectivity] [-t=target] [-d=destination]
     [--process-rainfall] [-t=target] [-d=destination]
     [--correlate-dbz-location] [-f=filename] [-d=destination] [--filter] [-r=50] [--all]
     [--show-data] [-t=target]
-    [--run]
+    [--run] [-t=target]
 
 Opciones:
 =========
@@ -24,8 +24,7 @@ Opciones:
                              coordenadas geograficas
     --show-data              muestra los datos en pantalla (DEBUG)
     --run                    lanza un proceso que escucha por el ultimo archivo
-                             generado por el radar, lo procesa y envia los datos
-                             al servidor *devel.apkc.net*
+                             generado por el radar, y lo procesa
 
     ---
 
@@ -48,11 +47,15 @@ Banderas:
 """
 
 import getopt
+import os
 import sys
+import time
 
+from ama.file_listener import FileListener
 from ama.processor import Processor
 from ama.show_data import ShowData
 from ama.utils import Colors
+from watchdog.observers import Observer
 
 __author__ = "Andreas P. Koenzen"
 __copyright__ = "Copyright 2016, Proyecto de Tesis / Universidad Católica de Asunción."
@@ -121,7 +124,6 @@ def main(argv=None):
                 command = 4
             elif opt == "--run":
                 command = 5
-                # TODO Agregar soporte para escuchar por ultimo archivo.
             elif opt == "-t":
                 target = arg
             elif opt == "-d":
@@ -140,22 +142,41 @@ def main(argv=None):
             if not target and not destination:
                 print(Colors.FAIL + "\tERROR: Origen y destino no definidos." + Colors.ENDC)
                 return 2
+
             Processor().process_directory_generate_raw_images_from_reflectivity(target, destination)
         elif command == 2:
             if not target and not destination:
                 print(Colors.FAIL + "\tERROR: Origen y destino no definidos." + Colors.ENDC)
                 return 2
+
             Processor().process_directory_generate_raw_images_from_rainfall_intensity(target, destination)
         elif command == 3:
             if not filename and not destination:
                 print(Colors.FAIL + "\tERROR: Nombre de archivo y destino no definidos." + Colors.ENDC)
                 return 2
+
             Processor().correlate_dbz_to_location(filename, destination, process_all, use_filter, radius)
         elif command == 4:
             if not target:
                 print(Colors.FAIL + "\tERROR: Origen no definido." + Colors.ENDC)
                 return 2
+
             ShowData.show_data(target)
+        elif command == 5:
+            if not target:
+                print(Colors.FAIL + "\tERROR: Origen no definido." + Colors.ENDC)
+                return 2
+
+            event_handler = FileListener()
+            observer = Observer()
+            observer.schedule(event_handler, path=os.path.join(os.environ["AMA_EXPORT_DATA"], target), recursive=False)
+            observer.start()  # lanzar el proceso que observa adiciones en el directorio.
+            try:
+                while True:
+                    time.sleep(1)
+            except KeyboardInterrupt:
+                observer.stop()  # agregar opcion de parar el observador con Ctrl+C.
+            observer.join()
     except Usage, err:
         sys.stderr.write(Colors.FAIL + "\tERROR: {0}".format(err.msg) + Colors.ENDC)
         sys.stderr.write(Colors.HEADER + "\tINFO: para ayuda utilizar --help" + Colors.ENDC)

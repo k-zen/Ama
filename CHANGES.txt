@@ -1,7 +1,19 @@
-=================== Release 0.1 P1 XX/XX/2016 =====================
+=================== Release 0.1 01/05/2016 =====================
 Descripción
-    -- Primer prototipo de la librería.
+    -- Primer versión de la librería.
+Funciones:
+    -- Procesar un directorio que contiene archivos con datos de radar y por cada archivo generar una
+    imagen de las reflectividades (dbZ).
+    -- Procesar un directorio que contiene archivos con datos de radar y por cada archivo generar una
+    imagen de las intensidades de lluvia (mm/h).
+    -- Procesar un directorio o un archivo único y correlacionar los decibeles de reflectividad a una
+    ubicación geográfica determinada en coordenadas geográficas (Lat/Long). Puede generar un archivo
+    resultante o llamar a un Web Service.
 Cambios
+    -- 06/04/2017
+        Agregado soporte para escuchar por archivos nuevos en un directorio. Estos archivos nuevos corresponden
+        a datos de radar, los cuales son procesados en insertados en una BD Postgresql. Esta función se denomina
+        *Run* o función *Run del Procesador*.
     -- 05/10/2016
         Modificado la estructura del proyecto. Agregado soporte para *setuptools*.
         Agregado soporte para funcion principal con parametros.

@@ -18,5 +18,5 @@ Sitio Web
 =========
 El codigo completo de Ama puede encontrarse en::
 
-    * `GitHub <https://github.com/k-zen/Ama>`_
-    * `Tesis de Licenciatura / UCA <http://apkc.net/_4>`_
+    * GitHub (https://github.com/k-zen/Ama)
+    * Tesis de Licenciatura / UCA (http://apkc.net/_4)
