@@ -90,3 +90,21 @@ class Utils:
                 return False
 
         return True
+
+    @staticmethod
+    def should_process_file(filename, file_size_limit):
+        """
+        Chequea si un archivo cumple con las condiciones para ser procesado.
+
+        :param filename         El archivo a procesar.
+        :param file_size_limit: El tamaño máximo de un archivo a procesar. \
+            Los archivos que sobrepasen el tamaño serán obviados.
+
+        :return: True si el archivo debe ser procesado, False de lo contrario.
+        """
+
+        if filename.endswith(".mvol"):
+            if os.stat(filename).st_size < file_size_limit:
+                return True
+
+        return False

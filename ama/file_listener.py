@@ -11,7 +11,9 @@ Clase perteneciente al módulo de procesamiento de datos e inferencias Ama.
 """
 
 from watchdog.events import FileSystemEventHandler
+from ama.processor import Processor
 from ama.utils import Colors
+from ama.utils import Utils
 
 __author__ = "Andreas P. Koenzen"
 __copyright__ = "Copyright 2016, Proyecto de Tesis / Universidad Católica de Asunción."
@@ -29,4 +31,12 @@ class FileListener(FileSystemEventHandler):
     """
 
     def on_created(self, event):
-        print(Colors.OKGREEN + "\tINFO: Detectado archivo nuevo: {0}".format(event.src_path) + Colors.ENDC)
+        if Utils.should_process_file(event.src_path, Processor.FILE_SIZE_LIMIT):
+            print(Colors.OKGREEN + "\tINFO: Detectado archivo nuevo. Procesando..." + Colors.ENDC)
+            print(Colors.OKGREEN + "\t\tARCHIVO: {0}".format(event.src_path) + Colors.ENDC)
+
+            # procesar el archivo.
+            Processor().single_correlate_dbz_to_location_to_json(event.src_path, True)
+        else:
+            print(Colors.FAIL + "\tERROR: El archivo detectado no cumple con los requisitos de procesamiento." + Colors.ENDC)
+            print(Colors.FAIL + "\t\tARCHIVO: {0}".format(event.src_path) + Colors.ENDC)
