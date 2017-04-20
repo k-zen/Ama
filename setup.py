@@ -20,6 +20,7 @@ setup(
         "h5py >= 2.0.1",
         "netCDF4 >= 1.0",
         "gdal >= 1.9",
-        "watchdog >= 0.8.3"
+        "watchdog >= 0.8.3",
+        "requests >= 2.13.0"
     ]
 )
