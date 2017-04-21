@@ -181,8 +181,8 @@ def main(argv=None):
                 observer.stop()  # agregar opcion de parar el observador con Ctrl+C.
             observer.join()
     except Usage, err:
-        sys.stderr.write(Colors.FAIL + "\tERROR: {0}".format(err.msg) + Colors.ENDC)
-        sys.stderr.write(Colors.HEADER + "\tINFO: para ayuda utilizar --help" + Colors.ENDC)
+        print(Colors.FAIL + "\tERROR: {0}".format(err.msg) + Colors.ENDC)
+        print(Colors.HEADER + "\tINFO: para ayuda utilizar --help" + Colors.ENDC)
         return 2
 
 
