@@ -180,7 +180,7 @@ class Processor:
                 for index, item in enumerate(matches):
                     print("{0} => {1}".format(index, os.path.splitext(ntpath.basename(item))[0]))
         else:
-            print(Colors.FAIL + "ERROR: No hay archivos para procesar en *{0}*!".format(
+            print(Colors.FAIL + "\tERROR: No hay archivos para procesar en *{0}*!".format(
                 os.environ["WRADLIB_DATA"] + origin) + Colors.ENDC)
 
     def single_correlate_dbz_to_location(self, filename, destination, use_filter=False, radius=50):
@@ -368,9 +368,9 @@ class Processor:
             headers = {'Content-type': 'application/json'}
             response = requests.post(url, data=cdata, headers=headers, timeout=5)
             if response.status_code != requests.codes.ok:
-                print(Colors.FAIL + "Error insertando datos en WS." + Colors.ENDC)
+                print(Colors.FAIL + "\tERROR: Insertando datos en WS." + Colors.ENDC)
             else:
-                print(Colors.OKGREEN + "Datos insertados." + Colors.ENDC)
+                print(Colors.OKGREEN + "\tINFO: Datos insertados." + Colors.ENDC)
 
             end = time.time()
 
@@ -379,5 +379,5 @@ class Processor:
                 print(Colors.HEADER + "Tamaño Datos Enviados: {0}kb".format(sys.getsizeof(cdata) / 1024) + Colors.ENDC)
                 print(Colors.HEADER + "Tiempo de Procesamiento: {0:.1f} minutos".format((end - start) / 60) + Colors.ENDC)
         except Exception as e:
-            print(Colors.FAIL + "ERROR: Corriendo trabajo de inserción." + Colors.ENDC)
-            print(Colors.FAIL + "DESCRIPCION: {0}".format(e) + Colors.ENDC)
+            print(Colors.FAIL + "\tERROR: Corriendo trabajo de inserción." + Colors.ENDC)
+            print(Colors.FAIL + "\t\tDESC: {0}".format(e) + Colors.ENDC)

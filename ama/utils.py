@@ -85,7 +85,7 @@ class Utils:
     def deduplicate_correlated_data(ri, lat, lon, data):
         for i, (r, la, lo) in enumerate(data):
             if la == lat and lo == lon:
-                print(Colors.WARNING + "Dato duplicado => RI={0:.2f}={1:.2f} Lat={2:.5f}={3:.5f} Long={4:.5f}={5:.5f}".format(
+                print(Colors.WARNING + "\tWARN: Dato duplicado => RI={0:.2f}={1:.2f} Lat={2:.5f}={3:.5f} Long={4:.5f}={5:.5f}".format(
                     r, ri, la, lat, lo, lon) + Colors.ENDC)
                 return False
 

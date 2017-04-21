@@ -167,9 +167,12 @@ def main(argv=None):
                 print(Colors.FAIL + "\tERROR: Origen no definido." + Colors.ENDC)
                 return 2
 
+            directory = os.path.join(os.environ["WRADLIB_DATA"], target)
+            print(Colors.OKBLUE + "\tINFO: Escuchando por adiciones en {0}.".format(directory) + Colors.ENDC)
+
             event_handler = FileListener()
             observer = Observer()
-            observer.schedule(event_handler, path=os.path.join(os.environ["AMA_EXPORT_DATA"], target), recursive=False)
+            observer.schedule(event_handler, path=directory, recursive=False)
             observer.start()  # lanzar el proceso que observa adiciones en el directorio.
             try:
                 while True:
