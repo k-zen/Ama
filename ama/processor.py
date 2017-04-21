@@ -317,62 +317,67 @@ class Processor:
             los puntos que se encuentren dentro de este radio serán incluidos en el archivo \
             resultante.
         """
-        start = time.time()
-        cdata = ""
-        data, metadata = Processor.process(filename)
-        clean_data = []
+        try:
+            start = time.time()
+            cdata = ""
+            data, metadata = Processor.process(filename)
+            clean_data = []
 
-        radar_latitude = float(metadata["VOL"]["Latitude"])
-        radar_longitude = float(metadata["VOL"]["Longitude"])
+            radar_latitude = float(metadata["VOL"]["Latitude"])
+            radar_longitude = float(metadata["VOL"]["Longitude"])
 
-        for (r, c), value in np.ndenumerate(data[u"SCAN0"][u"Z"]["data"]):
-            if value > -64.:
-                rng = metadata[u"SCAN0"]["r"][c]
-                azi = metadata[u"SCAN0"]["az"][r]
-                z = wrl.trafo.idecibel(value)
-                ri = wrl.zr.z2r(z, a=200., b=1.6)
-                lon, lat = wrl.georef.polar2lonlat(rng, azi, (radar_longitude, radar_latitude))
+            for (r, c), value in np.ndenumerate(data[u"SCAN0"][u"Z"]["data"]):
+                if value > -64.:
+                    rng = metadata[u"SCAN0"]["r"][c]
+                    azi = metadata[u"SCAN0"]["az"][r]
+                    z = wrl.trafo.idecibel(value)
+                    ri = wrl.zr.z2r(z, a=200., b=1.6)
+                    lon, lat = wrl.georef.polar2lonlat(rng, azi, (radar_longitude, radar_latitude))
 
-                # realizar los redondeos
-                rainfall_intensity = int(round(ri))
-                latitude = float("{0:.5f}".format(lat))
-                longitude = float("{0:.5f}".format(lon))
+                    # realizar los redondeos
+                    rainfall_intensity = int(round(ri))
+                    latitude = float("{0:.5f}".format(lat))
+                    longitude = float("{0:.5f}".format(lon))
 
-                if (haversine((radar_latitude, radar_longitude), (latitude, longitude)) < radius and ri > 5) or not use_filter:
-                    clean_data.append((rainfall_intensity, latitude, longitude))
+                    if (haversine((radar_latitude, radar_longitude), (latitude, longitude)) < radius and ri > 5) or not use_filter:
+                        clean_data.append((rainfall_intensity, latitude, longitude))
 
-        # construir el texto JSON.
-        # cabecera
-        cdata += "{{\"fechaCarga\":\"{0}\",\"arrayDatos\":[".format(metadata[u"SCAN0"]["Time"])
+            # construir el texto JSON.
+            # cabecera
+            cdata += "{{\"fechaCarga\":\"{0}\",\"arrayDatos\":[".format(metadata[u"SCAN0"]["Time"])
 
-        for i, (ri, lat, lon) in enumerate(clean_data):
-            line = "\"{0:d};{1:.5f}:{2:.5f}\",".format(ri, lat, lon)
+            for i, (ri, lat, lon) in enumerate(clean_data):
+                line = "\"{0:d};{1:.5f}:{2:.5f}\",".format(ri, lat, lon)
 
-            # si es el último registro remover la coma al final.
-            if i == (len(clean_data) - 1):
-                line = line[:-1]
+                # si es el último registro remover la coma al final.
+                if i == (len(clean_data) - 1):
+                    line = line[:-1]
 
-            # cuerpo
-            cdata += line
+                # cuerpo
+                cdata += line
 
-        # pie
-        cdata += "]}"
+            # pie
+            cdata += "]}"
 
-        # if self.DEBUG == 1:
-        # print(cdata)
+            # if self.DEBUG == 1:
+            # print(cdata)
 
-        # insertar los datos.
-        url = "http://127.0.0.1:80/ama/insertar"
-        headers = {'Content-type': 'application/json'}
-        response = requests.post(url, data=cdata, headers=headers)
-        if response.status_code != requests.codes.ok:
-            print(Colors.FAIL + "Error insertando datos en WS." + Colors.ENDC)
-        else:
-            print(Colors.OKGREEN + "Datos insertados." + Colors.ENDC)
+            # insertar los datos.
+            # IMPORTANTE! Añadir timeout de 5 segundos para el pedido.
+            url = "http://127.0.0.1:80/ama/insertar"
+            headers = {'Content-type': 'application/json'}
+            response = requests.post(url, data=cdata, headers=headers, timeout=5)
+            if response.status_code != requests.codes.ok:
+                print(Colors.FAIL + "Error insertando datos en WS." + Colors.ENDC)
+            else:
+                print(Colors.OKGREEN + "Datos insertados." + Colors.ENDC)
 
-        end = time.time()
+            end = time.time()
 
-        if self.DEBUG == 1:
-            print(Colors.HEADER + "---" + Colors.ENDC)
-            print(Colors.HEADER + "Tamaño Datos Enviados: {0}kb".format(sys.getsizeof(cdata) / 1024) + Colors.ENDC)
-            print(Colors.HEADER + "Tiempo de Procesamiento: {0:.1f} minutos".format((end - start) / 60) + Colors.ENDC)
+            if self.DEBUG == 1:
+                print(Colors.HEADER + "---" + Colors.ENDC)
+                print(Colors.HEADER + "Tamaño Datos Enviados: {0}kb".format(sys.getsizeof(cdata) / 1024) + Colors.ENDC)
+                print(Colors.HEADER + "Tiempo de Procesamiento: {0:.1f} minutos".format((end - start) / 60) + Colors.ENDC)
+        except Exception as e:
+            print(Colors.FAIL + "ERROR: Corriendo trabajo de inserción." + Colors.ENDC)
+            print(Colors.FAIL + "DESCRIPCION: {0}".format(e) + Colors.ENDC)

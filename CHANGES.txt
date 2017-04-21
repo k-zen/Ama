@@ -10,6 +10,8 @@ Funciones:
     ubicación geográfica determinada en coordenadas geográficas (Lat/Long). Puede generar un archivo
     resultante o llamar a un Web Service.
 Cambios
+    -- 21/04/2017
+        Agregado soporte para timeout en llamada al Controlador y tambien soporte para excepciones.
     -- 06/04/2017
         Agregado soporte para escuchar por archivos nuevos en un directorio. Estos archivos nuevos corresponden
         a datos de radar, los cuales son procesados en insertados en una BD Postgresql. Esta función se denomina
