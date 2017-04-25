@@ -43,6 +43,7 @@ class Processor:
     def __init__(self):
         pass
 
+    ###### OPCIONES MISCELANEAS ######
     DEBUG = True
     """
     boolean: Bandera para habilitar/deshabilitar modo DEBUG.
@@ -54,6 +55,12 @@ class Processor:
     QT = -1
     """
     int: La cantidad de archivos a procesar dentro de un directorio.
+    """
+
+    ###### OPCIONES DE PROCESAMIENTO ######
+    MINIMUM_RAINFALL_RATE = 0.20
+    """
+    float: El mínimo para filtrar las intensidades. Intensidades menores a este valor serán obviadas.
     """
 
     @staticmethod
@@ -231,7 +238,8 @@ class Processor:
                 latitude = float("{0:.5f}".format(lat))
                 longitude = float("{0:.5f}".format(lon))
 
-                if (haversine((radar_latitude, radar_longitude), (latitude, longitude)) < radius and ri > 5) or not use_filter:
+                if (haversine((radar_latitude, radar_longitude),
+                              (latitude, longitude)) < radius and ri > Processor.MINIMUM_RAINFALL_RATE) or not use_filter:
                     clean_data.append((rainfall_intensity, latitude, longitude))
 
         for i, (ri, lat, lon) in enumerate(clean_data):
@@ -339,7 +347,8 @@ class Processor:
                     latitude = float("{0:.5f}".format(lat))
                     longitude = float("{0:.5f}".format(lon))
 
-                    if (haversine((radar_latitude, radar_longitude), (latitude, longitude)) < radius and ri > 5) or not use_filter:
+                    if (haversine((radar_latitude, radar_longitude),
+                                  (latitude, longitude)) < radius and ri > Processor.MINIMUM_RAINFALL_RATE) or not use_filter:
                         clean_data.append((rainfall_intensity, latitude, longitude))
 
             # construir el texto JSON.

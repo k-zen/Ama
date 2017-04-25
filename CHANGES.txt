@@ -10,6 +10,8 @@ Funciones:
     ubicación geográfica determinada en coordenadas geográficas (Lat/Long). Puede generar un archivo
     resultante o llamar a un Web Service.
 Cambios
+    -- 25/04/2017
+        Modificado el minimo para el filtrado de intensidades de lluvia.
     -- 21/04/2017
         Agregado soporte para timeout en llamada al Controlador y tambien soporte para excepciones.
     -- 06/04/2017
