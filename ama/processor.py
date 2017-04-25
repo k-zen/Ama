@@ -375,7 +375,7 @@ class Processor:
             # IMPORTANTE! Añadir timeout de 5 segundos para el pedido.
             url = "http://127.0.0.1:80/ama/insertar"
             headers = {'Content-type': 'application/json'}
-            response = requests.post(url, data=cdata, headers=headers, timeout=5)
+            response = requests.post(url, data=cdata, headers=headers, timeout=30)
             if response.status_code != requests.codes.ok:
                 print(Colors.FAIL + "\tERROR: Insertando datos en WS." + Colors.ENDC)
             else:
