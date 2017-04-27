@@ -11,19 +11,21 @@ Funciones:
     resultante o llamar a un Web Service.
 Cambios
     -- 27/04/2017
-        Agregado soporte para hasta 1 decimal en intensidad de lluvia.
+        * Agregado soporte para escribir los datos de intensidad de lluvia en un archivo externo para luego
+        usarlo en los filtros de ruido.
+        * Agregado soporte para hasta 1 decimal en intensidad de lluvia.
     -- 25/04/2017
-        Modificado el minimo para el filtrado de intensidades de lluvia.
+        * Modificado el minimo para el filtrado de intensidades de lluvia.
     -- 21/04/2017
-        Agregado soporte para timeout en llamada al Controlador y tambien soporte para excepciones.
+        * Agregado soporte para timeout en llamada al Controlador y tambien soporte para excepciones.
     -- 06/04/2017
-        Agregado soporte para escuchar por archivos nuevos en un directorio. Estos archivos nuevos corresponden
+        * Agregado soporte para escuchar por archivos nuevos en un directorio. Estos archivos nuevos corresponden
         a datos de radar, los cuales son procesados en insertados en una BD Postgresql. Esta función se denomina
         *Run* o función *Run del Procesador*.
     -- 05/10/2016
-        Modificado la estructura del proyecto. Agregado soporte para *setuptools*.
-        Agregado soporte para funcion principal con parametros.
+        * Modificado la estructura del proyecto. Agregado soporte para *setuptools*.
+        * Agregado soporte para funcion principal con parametros.
     -- 04/10/2016
-        Agregado nuevos metodos a la clase *Processor*.
+        * Agregado nuevos metodos a la clase *Processor*.
     -- 29/09/2016
-        Agregado clase *Processor*, la cual seria el punto de entrada para el procesamiento de datos.
+        * Agregado clase *Processor*, la cual seria el punto de entrada para el procesamiento de datos.

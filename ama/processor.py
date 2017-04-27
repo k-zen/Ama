@@ -328,8 +328,11 @@ class Processor:
         try:
             start = time.time()
             cdata = ""
+            destination = os.path.join(os.environ["AMA_EXPORT_DATA"], "NoiseData.noise")
             data, metadata = Processor.process(filename)
             clean_data = []
+
+            file = open(destination, "w")
 
             radar_latitude = float(metadata["VOL"]["Latitude"])
             radar_longitude = float(metadata["VOL"]["Longitude"])
@@ -362,11 +365,15 @@ class Processor:
                 if i == (len(clean_data) - 1):
                     line = line[:-1]
 
+                file.write("{0}\t{1:.1f}\t{2:.5f}\t{3:.5f}\n".format(metadata[u"SCAN0"]["Time"], ri, lat, lon))
+
                 # cuerpo
                 cdata += line
 
             # pie
             cdata += "]}"
+
+            file.close()
 
             # if self.DEBUG == 1:
             # print(cdata)
