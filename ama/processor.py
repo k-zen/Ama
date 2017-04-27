@@ -234,16 +234,16 @@ class Processor:
                 lon, lat = wrl.georef.polar2lonlat(rng, azi, (radar_longitude, radar_latitude))
 
                 # realizar los redondeos
-                rainfall_intensity = int(round(ri))
+                rainfall_intensity = float("{0:.1f}".format(ri))
                 latitude = float("{0:.5f}".format(lat))
                 longitude = float("{0:.5f}".format(lon))
 
                 if (haversine((radar_latitude, radar_longitude),
-                              (latitude, longitude)) < radius and ri > Processor.MINIMUM_RAINFALL_RATE) or not use_filter:
+                              (latitude, longitude)) < radius and ri >= Processor.MINIMUM_RAINFALL_RATE) or not use_filter:
                     clean_data.append((rainfall_intensity, latitude, longitude))
 
         for i, (ri, lat, lon) in enumerate(clean_data):
-            line = "{0:d},{1:.5f}:{2:.5f}".format(ri, lat, lon)
+            line = "{0:.1f},{1:.5f}:{2:.5f}".format(ri, lat, lon)
 
             file.write(line + "\n")
 
@@ -343,12 +343,12 @@ class Processor:
                     lon, lat = wrl.georef.polar2lonlat(rng, azi, (radar_longitude, radar_latitude))
 
                     # realizar los redondeos
-                    rainfall_intensity = int(round(ri))
+                    rainfall_intensity = float("{0:.1f}".format(ri))
                     latitude = float("{0:.5f}".format(lat))
                     longitude = float("{0:.5f}".format(lon))
 
                     if (haversine((radar_latitude, radar_longitude),
-                                  (latitude, longitude)) < radius and ri > Processor.MINIMUM_RAINFALL_RATE) or not use_filter:
+                                  (latitude, longitude)) < radius and ri >= Processor.MINIMUM_RAINFALL_RATE) or not use_filter:
                         clean_data.append((rainfall_intensity, latitude, longitude))
 
             # construir el texto JSON.
@@ -356,7 +356,7 @@ class Processor:
             cdata += "{{\"fechaCarga\":\"{0}\",\"arrayDatos\":[".format(metadata[u"SCAN0"]["Time"])
 
             for i, (ri, lat, lon) in enumerate(clean_data):
-                line = "\"{0:d};{1:.5f}:{2:.5f}\",".format(ri, lat, lon)
+                line = "\"{0:.1f};{1:.5f}:{2:.5f}\",".format(ri, lat, lon)
 
                 # si es el último registro remover la coma al final.
                 if i == (len(clean_data) - 1):
