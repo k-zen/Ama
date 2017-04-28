@@ -332,7 +332,7 @@ class Processor:
             data, metadata = Processor.process(filename)
             clean_data = []
 
-            file = open(destination, "w")
+            file = open(destination, "a")
 
             radar_latitude = float(metadata["VOL"]["Latitude"])
             radar_longitude = float(metadata["VOL"]["Longitude"])
