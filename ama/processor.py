@@ -48,7 +48,7 @@ class Processor:
     """
     boolean: Bandera para habilitar/deshabilitar modo DEBUG.
     """
-    FILE_SIZE_LIMIT = 2 * 1024 * 1024  # 2MB para los archivos del GAMIC con zoom out.
+    FILE_SIZE_LIMIT = 10 * 1024 * 1024  # 10MB para los archivos del GAMIC con zoom out.
     """
     int: Tamaño máximo de archivos a procesar. Todos los archivos que sobrepasen este tamaño serán obviados.
     """
