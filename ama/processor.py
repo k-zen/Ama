@@ -48,7 +48,7 @@ class Processor:
     """
     boolean: Bandera para habilitar/deshabilitar modo DEBUG.
     """
-    FILE_SIZE_LIMIT = 10 * 1024 * 1024  # 10MB para los archivos del GAMIC con zoom out.
+    FILE_SIZE_LIMIT = 100 * 1024 * 1024  # 100MB para los archivos del GAMIC con zoom out.
     """
     int: Tamaño máximo de archivos a procesar. Todos los archivos que sobrepasen este tamaño serán obviados.
     """
@@ -393,7 +393,15 @@ class Processor:
             if self.DEBUG == 1:
                 print(Colors.HEADER + "---" + Colors.ENDC)
                 print(Colors.HEADER + "Tamaño Datos Enviados: {0}kb".format(sys.getsizeof(cdata) / 1024) + Colors.ENDC)
-                print(Colors.HEADER + "Tiempo de Procesamiento: {0:.1f} minutos".format((end - start) / 60) + Colors.ENDC)
+                print(Colors.HEADER + "Tiempo de Procesamiento: {0:.1f} segundos".format((end - start)) + Colors.ENDC)
         except Exception as e:
             print(Colors.FAIL + "\tERROR: Corriendo trabajo de inserción." + Colors.ENDC)
             print(Colors.FAIL + "\t\tDESC: {0}".format(e) + Colors.ENDC)
+        finally:
+            # siempre borrar el archivo que fue procesado.
+            try:
+                os.remove(filename)
+                print(Colors.OKGREEN + "\tINFO: Datos originales borrados." + Colors.ENDC)
+            except Exception as e:
+                print(Colors.FAIL + "\tERROR: Borrando archivo original." + Colors.ENDC)
+                print(Colors.FAIL + "\t\tDESC: {0}".format(e) + Colors.ENDC)
