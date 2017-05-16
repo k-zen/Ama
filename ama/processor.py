@@ -401,7 +401,7 @@ class Processor:
             # siempre borrar el archivo que fue procesado.
             try:
                 os.remove(filename)
-                print(Colors.OKGREEN + "\tINFO: Datos originales borrados." + Colors.ENDC)
+                print(Colors.HEADER + "Datos originales borrados." + Colors.ENDC)
             except Exception as e:
                 print(Colors.FAIL + "\tERROR: Borrando archivo original." + Colors.ENDC)
                 print(Colors.FAIL + "\t\tDESC: {0}".format(e) + Colors.ENDC)
