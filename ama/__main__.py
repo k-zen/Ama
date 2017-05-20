@@ -10,9 +10,9 @@ Uso:
 ====
 ama [--process-reflectivity] [-t=target] [-d=destination]
     [--process-rainfall] [-t=target] [-d=destination]
-    [--correlate-dbz-location] [-f=filename] [-d=destination] [-layer=0] [--all]
+    [--correlate-dbz-location] [-f=filename] [-d=destination] [-l=0] [--all]
     [--show-data] [-t=target]
-    [--run] [-t=target] [-layer=0]
+    [--run] [-t=target] [-l=0]
 
 Opciones:
 =========
@@ -34,7 +34,7 @@ Opciones:
        que se parte siempre desde la variable de entorno AMA_EXPORT_DATA
     -f El nombre del archivo a procesar. Tomar en cuenta que se parte siempre
        desde la variable de entorno WRADLIB_DATA
-    -layer La capa de datos a utilizar. Valores correctos son: 0 hasta 10
+    -l La capa de datos a utilizar. Valores correctos son: 0 hasta 10
 
     ---
 
@@ -127,7 +127,7 @@ def main(argv=None):
                 destination = arg
             elif opt == "-f":
                 filename = arg
-            elif opt == "-layer":
+            elif opt == "-l":
                 layer = int(arg)
             elif opt == "--all":
                 process_all = True
