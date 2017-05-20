@@ -202,7 +202,8 @@ class Processor:
         """
         start = time.time()
         cdata = ""
-        destination = os.path.join(os.environ["AMA_EXPORT_DATA"], destination, (os.path.splitext(ntpath.basename(filename))[0] + ".ama"))
+        destination = os.path.join(os.environ["AMA_EXPORT_DATA"], destination,
+                                   (os.path.splitext(ntpath.basename(filename))[0] + ".layer_{0}.ama".format(layer)))
         data, metadata = Processor.process(filename)
         clean_data = []
         layer_key = u"SCAN{0}".format(layer)
@@ -224,9 +225,10 @@ class Processor:
                 latitude_value = float("{0:.5f}".format(lat))
                 longitude_value = float("{0:.5f}".format(lon))
 
-                clean_data.append((dBZ_value, latitude_value, longitude_value))
+                if dBZ_value > 0.0:
+                    clean_data.append((dBZ_value, latitude_value, longitude_value))
 
-        for i, (dBZ, lat, lon) in enumerate(clean_data):
+        for i, (dBZ, lat, lon) in enumerate(clean_data.sort(key=lambda tup: tup[0])):
             line = "{0:.1f},{1:.5f}:{2:.5f}".format(dBZ, lat, lon)
 
             file.write(line + "\n")
@@ -328,13 +330,14 @@ class Processor:
                     latitude_value = float("{0:.5f}".format(lat))
                     longitude_value = float("{0:.5f}".format(lon))
 
-                    clean_data.append((dBZ_value, latitude_value, longitude_value))
+                    if dBZ_value > 0.0:
+                        clean_data.append((dBZ_value, latitude_value, longitude_value))
 
             # construir el texto JSON.
             # cabecera
             cdata += "{{\"fechaCarga\":\"{0}\",\"arrayDatos\":[".format(metadata[layer_key]["Time"])
 
-            for i, (dBZ, lat, lon) in enumerate(clean_data):
+            for i, (dBZ, lat, lon) in enumerate(clean_data.sort(key=lambda tup: tup[0])):
                 line = "\"{0:.1f};{1:.5f}:{2:.5f}\",".format(dBZ, lat, lon)
 
                 # si es el último registro remover la coma al final.

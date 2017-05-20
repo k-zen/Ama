@@ -89,7 +89,7 @@ def main(argv=None):
         try:
             opts, args = getopt.getopt(
                 argv[1:],
-                "t:d:f:r:",
+                "t:d:f:l:",
                 [
                     "help",
                     "process-reflectivity",
