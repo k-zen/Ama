@@ -55,8 +55,8 @@ class Utils:
         procesados. Esta función devuelve los archivos de forma relativa
         desde la variable de entorno WRADLIB_DATA.
 
-        :param origin:          El directorio origen de datos.
-        :param qt:              La cantidad de archivos a procesar.
+        :param origin: El directorio origen de datos.
+        :param qt: La cantidad de archivos a procesar.
         :param file_size_limit: El tamaño máximo de un archivo a procesar. \
             Los archivos que sobrepasen el tamaño serán obviados.
 
@@ -92,19 +92,24 @@ class Utils:
         return True
 
     @staticmethod
-    def should_process_file(filename, file_size_limit):
+    def should_process_file(filename, file_size_limit, isDoppler):
         """
         Chequea si un archivo cumple con las condiciones para ser procesado.
 
-        :param filename         El archivo a procesar.
+        :param filename: El archivo a procesar.
         :param file_size_limit: El tamaño máximo de un archivo a procesar. \
             Los archivos que sobrepasen el tamaño serán obviados.
+        :param isDoppler: Si el archivo a procesar está en modo Simple o Doppler.
 
         :return: True si el archivo debe ser procesado, False de lo contrario.
         """
 
         if filename.endswith(".mvol"):
-            if os.stat(filename).st_size < file_size_limit:
-                return True
+            if isDoppler == False:
+                if os.stat(filename).st_size < file_size_limit:
+                    return True
+            else:
+                if os.stat(filename).st_size > file_size_limit:
+                    return True
 
         return False

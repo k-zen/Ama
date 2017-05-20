@@ -10,9 +10,9 @@ Uso:
 ====
 ama [--process-reflectivity] [-t=target] [-d=destination]
     [--process-rainfall] [-t=target] [-d=destination]
-    [--correlate-dbz-location] [-f=filename] [-d=destination] [--filter] [-r=50] [--all]
+    [--correlate-dbz-location] [-f=filename] [-d=destination] [-layer=0] [--all]
     [--show-data] [-t=target]
-    [--run] [-t=target]
+    [--run] [-t=target] [-layer=0]
 
 Opciones:
 =========
@@ -34,11 +34,10 @@ Opciones:
        que se parte siempre desde la variable de entorno AMA_EXPORT_DATA
     -f El nombre del archivo a procesar. Tomar en cuenta que se parte siempre
        desde la variable de entorno WRADLIB_DATA
-    -r El valor del radio para los filtros. En kilometros desde la ubicación del radar.
+    -layer La capa de datos a utilizar. Valores correctos son: 0 hasta 10
 
     ---
 
-    --filter Si deseamos filtrar los datos o se procesa el archivo por completo.
     --all    Procesar todos los archivos en un directorio.
 
 Banderas:
@@ -81,8 +80,7 @@ def main(argv=None):
     target = ""
     destination = ""
     filename = ""
-    use_filter = False
-    radius = 50
+    layer = 0
     process_all = False
 
     if argv is None:
@@ -99,7 +97,6 @@ def main(argv=None):
                     "correlate-dbz-location",
                     "show-data",
                     "run",
-                    "filter",
                     "all"
                 ]
             )
@@ -130,10 +127,8 @@ def main(argv=None):
                 destination = arg
             elif opt == "-f":
                 filename = arg
-            elif opt == "--filter":
-                use_filter = True
-            elif opt == "-r":
-                radius = int(arg)
+            elif opt == "-layer":
+                layer = int(arg)
             elif opt == "--all":
                 process_all = True
 
@@ -155,7 +150,7 @@ def main(argv=None):
                 print(Colors.FAIL + "\tERROR: Nombre de archivo y destino no definidos." + Colors.ENDC)
                 return 2
 
-            Processor().correlate_dbz_to_location(filename, destination, process_all, use_filter, radius)
+            Processor().correlate_dbz_to_location(filename, destination, process_all, layer)
         elif command == 4:
             if not target:
                 print(Colors.FAIL + "\tERROR: Origen no definido." + Colors.ENDC)
@@ -170,7 +165,7 @@ def main(argv=None):
             directory = os.path.join(os.environ["WRADLIB_DATA"], target)
             print(Colors.OKBLUE + "\tINFO: Escuchando por adiciones en {0}.".format(directory) + Colors.ENDC)
 
-            event_handler = FileListener()
+            event_handler = FileListener(layer)
             observer = Observer()
             observer.schedule(event_handler, path=directory, recursive=False)
             observer.start()  # lanzar el proceso que observa adiciones en el directorio.

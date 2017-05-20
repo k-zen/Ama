@@ -22,7 +22,6 @@ import requests
 
 from ama.utils import Colors
 from ama.utils import Utils
-from haversine import haversine
 
 __author__ = "Andreas P. Koenzen"
 __copyright__ = "Copyright 2016, Proyecto de Tesis / Universidad Católica de Asunción."
@@ -44,11 +43,11 @@ class Processor:
         pass
 
     ###### OPCIONES MISCELANEAS ######
-    DEBUG = True
+    DEBUG = False
     """
     boolean: Bandera para habilitar/deshabilitar modo DEBUG.
     """
-    FILE_SIZE_LIMIT = 100 * 1024 * 1024  # 100MB para los archivos del GAMIC con zoom out.
+    FILE_SIZE_LIMIT = 4 * 1024 * 1024  # 4MB para los archivos del GAMIC con zoom out.
     """
     int: Tamaño máximo de archivos a procesar. Todos los archivos que sobrepasen este tamaño serán obviados.
     """
@@ -57,20 +56,13 @@ class Processor:
     int: La cantidad de archivos a procesar dentro de un directorio.
     """
 
-    ###### OPCIONES DE PROCESAMIENTO ######
-    MINIMUM_RAINFALL_RATE = 0.20
-    """
-    float: El mínimo para filtrar las intensidades. Intensidades menores a este valor serán obviadas.
-    """
-
     @staticmethod
     def process(filename):
         """
         Procesa un archivo de datos de radar en formato GAMIC HDF5 y devuelve
         los datos.
-
-        TODO:
-        * Agregar soporte para Excepciones.
+        
+        Esta función esta diseñada para archivos de modalidad Simple y Doppler.
 
         :param filename: El nombre del archivo a procesar. El formato debe ser \
             *WRADLIB_DATA/<filename>*.
@@ -91,9 +83,8 @@ class Processor:
         Procesa todos los archivos que se encuentran en el directorio
         de datos de forma recursiva y genera imagenes para cada set de datos
         utilizando los datos de reflectividad.
-
-        TODO:
-        * Agregar soporte para Excepciones.
+        
+        Esta función esta diseñada para archivos de modalidad Simple.
 
         :param origin: El directorio origen de datos.
         :param destination: El directorio destino de las imagenes.
@@ -138,8 +129,7 @@ class Processor:
         de datos de forma recursiva y genera imagenes para cada set de datos
         utilizando los datos de intensidad de lluvia.
 
-        TODO:
-        * Agregar soporte para Excepciones.
+        Esta función esta diseñada para archivos de modalidad Simple.
 
         :param origin: El directorio origen de datos.
         :param destination: El directorio destino de las imagenes.
@@ -190,9 +180,11 @@ class Processor:
             print(Colors.FAIL + "\tERROR: No hay archivos para procesar en *{0}*!".format(
                 os.environ["WRADLIB_DATA"] + origin) + Colors.ENDC)
 
-    def single_correlate_dbz_to_location(self, filename, destination, use_filter=False, radius=50):
+    def single_correlate_dbz_to_location(self, filename, destination, layer):
         """
-        Esta funcion realiza la correlacion entre dbZ y sus coordenadas geograficas en el mapa.
+        Esta funcion realiza la correlacion entre dBZ y sus coordenadas geograficas en el mapa.
+        
+        Esta función esta diseñada para archivos de modalidad Simple y Doppler.
 
         Formato del archivo a generar:
         ==============================
@@ -200,17 +192,11 @@ class Processor:
         lineas, en el cual cada registro a su vez se encuentra separado por comas.
 
         Ejemplo:
-            rainfall_intensity,latitude:longitude
-
-        TODO:
-        * Agregar soporte para Excepciones.
+            dBZ,latitude:longitude
 
         :param filename: El nombre del archivo a procesar.
         :param destination: El nombre del directorio en donde colocar los archivos resultantes.
-        :param use_filter: Si los filtros deben estar habilitados.
-        :param radius: El radio para los filtros. En km desde la ubicación del radar. Todos \
-            los puntos que se encuentren dentro de este radio serán incluidos en el archivo \
-            resultante.
+        :param layer: La capa de datos a procesar. Cada capa corresponde a un ángulo de elevación del radar.
 
         :return: void
         """
@@ -219,31 +205,29 @@ class Processor:
         destination = os.path.join(os.environ["AMA_EXPORT_DATA"], destination, (os.path.splitext(ntpath.basename(filename))[0] + ".ama"))
         data, metadata = Processor.process(filename)
         clean_data = []
+        layer_key = u"SCAN{0}".format(layer)
 
         file = open(destination, "w")
 
         radar_latitude = float(metadata["VOL"]["Latitude"])
         radar_longitude = float(metadata["VOL"]["Longitude"])
 
-        for (r, c), value in np.ndenumerate(data[u"SCAN0"][u"Z"]["data"]):
+        for (row, column), value in np.ndenumerate(data[layer_key][u"Z"]["data"]):
             if value > -64.:
-                rng = metadata[u"SCAN0"]["r"][c]
-                azi = metadata[u"SCAN0"]["az"][r]
-                z = wrl.trafo.idecibel(value)
-                ri = wrl.zr.z2r(z, a=200., b=1.6)
+                rng = metadata[layer_key]["r"][column]
+                azi = metadata[layer_key]["az"][row]
+                dBZ = wrl.trafo.idecibel(value)
                 lon, lat = wrl.georef.polar2lonlat(rng, azi, (radar_longitude, radar_latitude))
 
                 # realizar los redondeos
-                rainfall_intensity = float("{0:.1f}".format(ri))
-                latitude = float("{0:.5f}".format(lat))
-                longitude = float("{0:.5f}".format(lon))
+                dBZ_value = float("{0:.1f}".format(dBZ))
+                latitude_value = float("{0:.5f}".format(lat))
+                longitude_value = float("{0:.5f}".format(lon))
 
-                if (haversine((radar_latitude, radar_longitude),
-                              (latitude, longitude)) < radius and ri >= Processor.MINIMUM_RAINFALL_RATE) or not use_filter:
-                    clean_data.append((rainfall_intensity, latitude, longitude))
+                clean_data.append((dBZ_value, latitude_value, longitude_value))
 
-        for i, (ri, lat, lon) in enumerate(clean_data):
-            line = "{0:.1f},{1:.5f}:{2:.5f}".format(ri, lat, lon)
+        for i, (dBZ, lat, lon) in enumerate(clean_data):
+            line = "{0:.1f},{1:.5f}:{2:.5f}".format(dBZ, lat, lon)
 
             file.write(line + "\n")
 
@@ -256,15 +240,16 @@ class Processor:
 
         end = time.time()
 
-        if self.DEBUG == 1:
-            print(Colors.HEADER + "---" + Colors.ENDC)
-            print(Colors.HEADER + "Tamaño Datos Enviados: {0}kb".format(sys.getsizeof(cdata) / 1024) + Colors.ENDC)
-            print(Colors.HEADER + "Tiempo de Procesamiento: {0:.1f} minutos".format((end - start) / 60) + Colors.ENDC)
+        print(Colors.HEADER + "---" + Colors.ENDC)
+        print(Colors.HEADER + "Tamaño Datos Enviados: {0}kb".format(sys.getsizeof(cdata) / 1024) + Colors.ENDC)
+        print(Colors.HEADER + "Tiempo de Procesamiento: {0:.1f} minutos".format((end - start) / 60) + Colors.ENDC)
 
-    def correlate_dbz_to_location(self, filename, destination, process_all, use_filter=False, radius=50):
+    def correlate_dbz_to_location(self, filename, destination, process_all, layer):
         """
         Esta funcion procesa todo un directorio de archivos y por cada uno realiza la 
-        correlacion entre dbZ y sus coordenadas geograficas en el mapa.
+        correlacion entre dBZ y sus coordenadas geograficas en el mapa.
+        
+        Esta función esta diseñada para archivos de modalidad Simple y Doppler.
 
         Formato del archivo a generar:
         ==============================
@@ -272,19 +257,13 @@ class Processor:
         lineas, en el cual cada registro a su vez se encuentra separado por comas.
 
         Ejemplo:
-            rainfall_intensity,latitude:longitude
-
-        TODO:
-        * Agregar soporte para Excepciones.
+            dBZ,latitude:longitude
 
         :param filename: El nombre del archivo a procesar.
         :param destination: El nombre del directorio en donde colocar los archivos resultantes.
         :param process_all Procesar todos los archivos en la carpeta donde se encuentra el archivo \
             pasado como *filename*.
-        :param use_filter: Si los filtros deben estar habilitados.
-        :param radius: El radio para los filtros. En km desde la ubicación del radar. Todos \
-            los puntos que se encuentren dentro de este radio serán incluidos en el archivo \
-            resultante.
+        :param layer: La capa de datos a procesar. Cada capa corresponde a un ángulo de elevación del radar.
 
         :return: void
         """
@@ -295,13 +274,16 @@ class Processor:
 
             if len(matches) > 0:
                 for item in matches:
-                    self.single_correlate_dbz_to_location(item, destination, use_filter, radius)
+                    if Utils.should_process_file(item, self.FILE_SIZE_LIMIT, True):
+                        self.single_correlate_dbz_to_location(item, destination, layer)
         else:
-            self.single_correlate_dbz_to_location(filename, destination, use_filter, radius)
+            self.single_correlate_dbz_to_location(filename, destination, layer)
 
-    def single_correlate_dbz_to_location_to_json(self, filename, use_filter=False, radius=50):
+    def single_correlate_dbz_to_location_to_json(self, filename, layer):
         """
-        Esta funcion realiza la correlacion entre dbZ y sus coordenadas geograficas en el mapa.
+        Esta funcion realiza la correlacion entre dBZ y sus coordenadas geograficas en el mapa.
+        
+        Esta función esta diseñada para archivos de modalidad Simple y Doppler.
 
         Formato del JSON a generar:
         ===========================
@@ -311,19 +293,15 @@ class Processor:
             Metadatos a enviar:
             ===================
             1. La hora/fecha que corresponde al archivo de los cuales provienen los datos. Generalmente
-            esta hora se encuentra en GMT -4/-3 y es manejada por el radar.
+            esta hora se encuentra en GMT y es manejada por el radar.
 
         Ejemplo:
-            rainfall_intensity,latitude:longitude
-
-        TODO:
-        * Agregar soporte para Excepciones.
+            dBZ,latitude:longitude
 
         :param filename: El nombre del archivo a procesar.
-        :param use_filter: Si los filtros deben estar habilitados.
-        :param radius: El radio para los filtros. En km desde la ubicación del radar. Todos \
-            los puntos que se encuentren dentro de este radio serán incluidos en el archivo \
-            resultante.
+        :param layer: La capa de datos a procesar. Cada capa corresponde a un ángulo de elevación del radar.
+        
+        :return: void
         """
         try:
             start = time.time()
@@ -331,41 +309,39 @@ class Processor:
             destination = os.path.join(os.environ["AMA_EXPORT_DATA"], "NoiseData.noise")
             data, metadata = Processor.process(filename)
             clean_data = []
+            layer_key = u"SCAN{0}".format(layer)
 
             file = open(destination, "a")
 
             radar_latitude = float(metadata["VOL"]["Latitude"])
             radar_longitude = float(metadata["VOL"]["Longitude"])
 
-            for (r, c), value in np.ndenumerate(data[u"SCAN0"][u"Z"]["data"]):
+            for (row, column), value in np.ndenumerate(data[layer_key][u"Z"]["data"]):
                 if value > -64.:
-                    rng = metadata[u"SCAN0"]["r"][c]
-                    azi = metadata[u"SCAN0"]["az"][r]
-                    z = wrl.trafo.idecibel(value)
-                    ri = wrl.zr.z2r(z, a=200., b=1.6)
+                    rng = metadata[layer_key]["r"][column]
+                    azi = metadata[layer_key]["az"][row]
+                    dBZ = wrl.trafo.idecibel(value)
                     lon, lat = wrl.georef.polar2lonlat(rng, azi, (radar_longitude, radar_latitude))
 
                     # realizar los redondeos
-                    rainfall_intensity = float("{0:.1f}".format(ri))
-                    latitude = float("{0:.5f}".format(lat))
-                    longitude = float("{0:.5f}".format(lon))
+                    dBZ_value = float("{0:.1f}".format(dBZ))
+                    latitude_value = float("{0:.5f}".format(lat))
+                    longitude_value = float("{0:.5f}".format(lon))
 
-                    if (haversine((radar_latitude, radar_longitude),
-                                  (latitude, longitude)) < radius and ri >= Processor.MINIMUM_RAINFALL_RATE) or not use_filter:
-                        clean_data.append((rainfall_intensity, latitude, longitude))
+                    clean_data.append((dBZ_value, latitude_value, longitude_value))
 
             # construir el texto JSON.
             # cabecera
-            cdata += "{{\"fechaCarga\":\"{0}\",\"arrayDatos\":[".format(metadata[u"SCAN0"]["Time"])
+            cdata += "{{\"fechaCarga\":\"{0}\",\"arrayDatos\":[".format(metadata[layer_key]["Time"])
 
-            for i, (ri, lat, lon) in enumerate(clean_data):
-                line = "\"{0:.1f};{1:.5f}:{2:.5f}\",".format(ri, lat, lon)
+            for i, (dBZ, lat, lon) in enumerate(clean_data):
+                line = "\"{0:.1f};{1:.5f}:{2:.5f}\",".format(dBZ, lat, lon)
 
                 # si es el último registro remover la coma al final.
                 if i == (len(clean_data) - 1):
                     line = line[:-1]
 
-                file.write("{0}\t{1:.1f}\t{2:.5f}\t{3:.5f}\n".format(metadata[u"SCAN0"]["Time"], ri, lat, lon))
+                file.write("{0}\t{1:.1f}\t{2:.5f}\t{3:.5f}\n".format(metadata[layer_key]["Time"], dBZ, lat, lon))
 
                 # cuerpo
                 cdata += line
@@ -375,11 +351,11 @@ class Processor:
 
             file.close()
 
-            # if self.DEBUG == 1:
-            # print(cdata)
+            if self.DEBUG == 1:
+                print(cdata)
 
             # insertar los datos.
-            # IMPORTANTE! Añadir timeout de 5 segundos para el pedido.
+            # IMPORTANTE! Añadir timeout de 30 segundos para el pedido.
             url = "http://127.0.0.1:80/ama/insertar"
             headers = {'Content-type': 'application/json'}
             response = requests.post(url, data=cdata, headers=headers, timeout=30)
@@ -390,10 +366,9 @@ class Processor:
 
             end = time.time()
 
-            if self.DEBUG == 1:
-                print(Colors.HEADER + "---" + Colors.ENDC)
-                print(Colors.HEADER + "Tamaño Datos Enviados: {0}kb".format(sys.getsizeof(cdata) / 1024) + Colors.ENDC)
-                print(Colors.HEADER + "Tiempo de Procesamiento: {0:.1f} segundos".format((end - start)) + Colors.ENDC)
+            print(Colors.HEADER + "---" + Colors.ENDC)
+            print(Colors.HEADER + "Tamaño Datos Enviados: {0}kb".format(sys.getsizeof(cdata) / 1024) + Colors.ENDC)
+            print(Colors.HEADER + "Tiempo de Procesamiento: {0:.1f} segundos".format((end - start)) + Colors.ENDC)
         except Exception as e:
             print(Colors.FAIL + "\tERROR: Corriendo trabajo de inserción." + Colors.ENDC)
             print(Colors.FAIL + "\t\tDESC: {0}".format(e) + Colors.ENDC)

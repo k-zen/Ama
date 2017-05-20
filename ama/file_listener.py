@@ -30,13 +30,21 @@ class FileListener(FileSystemEventHandler):
     Manejador de cambios en un directorio previamente establecido.
     """
 
+    layer = 0
+    """
+    int: La capa de datos a procesar.
+    """
+
+    def __init__(self, layer):
+        self.layer = layer
+
     def on_created(self, event):
-        if Utils.should_process_file(event.src_path, Processor.FILE_SIZE_LIMIT):
+        if Utils.should_process_file(event.src_path, Processor.FILE_SIZE_LIMIT, True):
             print(Colors.OKGREEN + "\tINFO: Detectado archivo nuevo. Procesando..." + Colors.ENDC)
             print(Colors.OKGREEN + "\t\tARCHIVO: {0}".format(event.src_path) + Colors.ENDC)
 
             # procesar el archivo.
-            Processor().single_correlate_dbz_to_location_to_json(event.src_path, True)
+            Processor().single_correlate_dbz_to_location_to_json(event.src_path, self.layer)
         else:
             print(Colors.FAIL + "\tERROR: El archivo detectado no cumple con los requisitos de procesamiento." + Colors.ENDC)
             print(Colors.FAIL + "\t\tARCHIVO: {0}".format(event.src_path) + Colors.ENDC)
