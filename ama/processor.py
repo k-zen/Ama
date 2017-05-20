@@ -60,6 +60,12 @@ class Processor:
     boolean: Bandera para habilitar el borrado de archivos luego de procesarlos. Solo para modo *run*.
     """
 
+    ###### OPCIONES DE PROCESAMIENTO ######
+    MINIMUM_REFLECTIVITY = 5.0
+    """
+    float: El valor mínimo para las reflectividades. Valores menores a este son obviados. 
+    """
+
     @staticmethod
     def process(filename):
         """
@@ -229,7 +235,7 @@ class Processor:
                 latitude_value = float("{0:.5f}".format(lat))
                 longitude_value = float("{0:.5f}".format(lon))
 
-                if dBZ_value > 0.0:
+                if dBZ_value >= self.MINIMUM_REFLECTIVITY:
                     clean_data.append((dBZ_value, latitude_value, longitude_value))
 
         for i, (dBZ, lat, lon) in enumerate(sorted(clean_data, key=lambda tup: tup[0])):
@@ -334,7 +340,7 @@ class Processor:
                     latitude_value = float("{0:.5f}".format(lat))
                     longitude_value = float("{0:.5f}".format(lon))
 
-                    if dBZ_value > 0.0:
+                    if dBZ_value >= self.MINIMUM_REFLECTIVITY:
                         clean_data.append((dBZ_value, latitude_value, longitude_value))
 
             # construir el texto JSON.
