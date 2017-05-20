@@ -43,12 +43,21 @@ class ShowData:
         data, metadata = Processor().process(filename)
 
         print(Colors.HEADER + "METADATOS" + Colors.ENDC)
-        print("Metadata => AZ => Shape: " + str(metadata[u"SCAN0"]["az"].shape))
-        print("Metadata => R  => Shape: " + str(metadata[u"SCAN0"]["r"].shape))
-        print("---")
+        for k in range(0, 11):
+            key = u"SCAN{0}".format(k)
+            if key in metadata:
+                print("Metadata => AZ => Shape: " + str(metadata[key]["az"].shape))
+                print("Metadata => R  => Shape: " + str(metadata[key]["r"].shape))
+                print("---")
+
         print(metadata)
         print("")
+
         print(Colors.HEADER + "DATOS" + Colors.ENDC)
-        print("Data => Z  => Shape: " + str(data[u"SCAN0"][u"Z"]["data"].shape))
-        print("---")
+        for k in range(0, 11):
+            key = u"SCAN{0}".format(k)
+            if key in metadata:
+                print("Data => Z  => Shape: " + str(data[u"SCAN0"][u"Z"]["data"].shape))
+                print("---")
+
         print(data)
