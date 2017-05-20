@@ -55,6 +55,10 @@ class Processor:
     """
     int: La cantidad de archivos a procesar dentro de un directorio.
     """
+    SHOULD_REMOVE_PROCESSED_FILES = False
+    """
+    boolean: Bandera para habilitar el borrado de archivos luego de procesarlos. Solo para modo *run*.
+    """
 
     @staticmethod
     def process(filename):
@@ -228,7 +232,7 @@ class Processor:
                 if dBZ_value > 0.0:
                     clean_data.append((dBZ_value, latitude_value, longitude_value))
 
-        for i, (dBZ, lat, lon) in enumerate(clean_data.sort(key=lambda tup: tup[0])):
+        for i, (dBZ, lat, lon) in enumerate(sorted(clean_data, key=lambda tup: tup[0])):
             line = "{0:.1f},{1:.5f}:{2:.5f}".format(dBZ, lat, lon)
 
             file.write(line + "\n")
@@ -337,7 +341,7 @@ class Processor:
             # cabecera
             cdata += "{{\"fechaCarga\":\"{0}\",\"arrayDatos\":[".format(metadata[layer_key]["Time"])
 
-            for i, (dBZ, lat, lon) in enumerate(clean_data.sort(key=lambda tup: tup[0])):
+            for i, (dBZ, lat, lon) in enumerate(sorted(clean_data, key=lambda tup: tup[0])):
                 line = "\"{0:.1f};{1:.5f}:{2:.5f}\",".format(dBZ, lat, lon)
 
                 # si es el último registro remover la coma al final.
@@ -377,8 +381,9 @@ class Processor:
             print(Colors.FAIL + "\t\tDESC: {0}".format(e) + Colors.ENDC)
         finally:
             # siempre borrar el archivo que fue procesado.
-            try:
-                os.remove(filename)
-            except Exception as e:
-                print(Colors.FAIL + "\tERROR: Borrando archivo original." + Colors.ENDC)
-                print(Colors.FAIL + "\t\tDESC: {0}".format(e) + Colors.ENDC)
+            if self.SHOULD_REMOVE_PROCESSED_FILES == 1:
+                try:
+                    os.remove(filename)
+                except Exception as e:
+                    print(Colors.FAIL + "\tERROR: Borrando archivo original." + Colors.ENDC)
+                    print(Colors.FAIL + "\t\tDESC: {0}".format(e) + Colors.ENDC)

@@ -39,10 +39,9 @@ class FileListener(FileSystemEventHandler):
         self.layer = layer
 
     def on_created(self, event):
+        print(Colors.OKGREEN + "\tINFO: Detectado archivo nuevo. Procesando..." + Colors.ENDC)
         if Utils.should_process_file(event.src_path, Processor.FILE_SIZE_LIMIT, True):
-            print(Colors.OKGREEN + "\tINFO: Detectado archivo nuevo. Procesando..." + Colors.ENDC)
             print(Colors.OKGREEN + "\t\tARCHIVO: {0}".format(event.src_path) + Colors.ENDC)
-
             # procesar el archivo.
             Processor().single_correlate_dbz_to_location_to_json(event.src_path, self.layer)
         else:
