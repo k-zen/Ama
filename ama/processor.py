@@ -55,7 +55,7 @@ class Processor:
     """
     int: La cantidad de archivos a procesar dentro de un directorio.
     """
-    SHOULD_REMOVE_PROCESSED_FILES = False
+    SHOULD_REMOVE_PROCESSED_FILES = True
     """
     boolean: Bandera para habilitar el borrado de archivos luego de procesarlos. Solo para modo *run*.
     """
