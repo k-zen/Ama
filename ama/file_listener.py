@@ -10,6 +10,8 @@ Clase perteneciente al módulo de procesamiento de datos e inferencias Ama.
 .. moduleauthor:: Andreas P. Koenzen <akc@apkc.net>
 """
 
+import time
+
 from watchdog.events import FileSystemEventHandler
 from ama.processor import Processor
 from ama.utils import Colors
@@ -39,6 +41,8 @@ class FileListener(FileSystemEventHandler):
         self.layer = layer
 
     def on_created(self, event):
+        time.sleep(5)
+
         print(Colors.OKGREEN + "\tINFO: Detectado archivo nuevo. Procesando..." + Colors.ENDC)
         if Utils.should_process_file(event.src_path, Processor.FILE_SIZE_LIMIT, True):
             print(Colors.OKGREEN + "\t\tARCHIVO: {0}".format(event.src_path) + Colors.ENDC)

@@ -327,7 +327,7 @@ class Processor:
             clean_data = []
             layer_key = u"SCAN{0}".format(layer)
 
-            # file = open(destination, "a")
+            file = open(destination, "a")
 
             radar_latitude = float(metadata["VOL"]["Latitude"])
             radar_longitude = float(metadata["VOL"]["Longitude"])
@@ -358,7 +358,7 @@ class Processor:
                 if i == (len(clean_data) - 1):
                     line = line[:-1]
 
-                # file.write("{0}\t{1:.1f}\t{2:.5f}\t{3:.5f}\n".format(metadata[layer_key]["Time"], dBZ, lat, lon))
+                file.write("{0}\t{1:.1f}\t{2:.5f}\t{3:.5f}\n".format(metadata[layer_key]["Time"], dBZ, lat, lon))
 
                 # cuerpo
                 cdata += line
@@ -366,7 +366,7 @@ class Processor:
             # pie
             cdata += "]}"
 
-            # file.close()
+            file.close()
 
             if self.DEBUG == 1:
                 print(cdata)
