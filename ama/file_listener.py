@@ -10,6 +10,7 @@ Clase perteneciente al módulo de procesamiento de datos e inferencias Ama.
 .. moduleauthor:: Andreas P. Koenzen <akc@apkc.net>
 """
 
+import os
 import time
 
 from watchdog.events import FileSystemEventHandler
@@ -52,3 +53,10 @@ class FileListener(FileSystemEventHandler):
         else:
             print(Colors.FAIL + "\tERROR: El archivo detectado no cumple con los requisitos de procesamiento." + Colors.ENDC)
             print(Colors.FAIL + "\t\tARCHIVO: {0}".format(event.src_path) + Colors.ENDC)
+            # siempre borrar el archivo que fue procesado.
+            if Processor.SHOULD_REMOVE_PROCESSED_FILES == 1:
+                try:
+                    os.remove(event.src_path)
+                except Exception as e:
+                    print(Colors.FAIL + "\tERROR: Borrando archivo original." + Colors.ENDC)
+                    print(Colors.FAIL + "\t\tDESC: {0}".format(e) + Colors.ENDC)
