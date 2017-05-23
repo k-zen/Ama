@@ -12,7 +12,7 @@ ama [--process-reflectivity] [-t=target] [-d=destination]
     [--process-rainfall] [-t=target] [-d=destination]
     [--correlate-dbz-location] [-f=filename] [-d=destination] [-l=0] [--all]
     [--show-data] [-t=target]
-    [--run] [-t=target] [-l=0]
+    [--run] [-l=0]
 
 Opciones:
 =========
@@ -158,10 +158,6 @@ def main(argv=None):
 
             ShowData.show_data(target)
         elif command == 5:
-            if not target:
-                print(Colors.FAIL + "\tERROR: Origen no definido." + Colors.ENDC)
-                return 2
-
             directory = os.path.join(os.environ["WRADLIB_DATA"], target)
             print(Colors.OKBLUE + "\tINFO: Escuchando por adiciones en {0}.".format(directory) + Colors.ENDC)
 
