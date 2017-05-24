@@ -231,7 +231,7 @@ class Processor:
             if value > -64.:
                 rng = metadata[layer_key]["r"][column]
                 azi = metadata[layer_key]["az"][row]
-                dBZ = wrl.trafo.idecibel(value)
+                dBZ = value
                 lon, lat = wrl.georef.polar2lonlat(rng, azi, (radar_longitude, radar_latitude))
 
                 # realizar los redondeos
@@ -336,7 +336,7 @@ class Processor:
                 if value > -64.:
                     rng = metadata[layer_key]["r"][column]
                     azi = metadata[layer_key]["az"][row]
-                    dBZ = wrl.trafo.idecibel(value)
+                    dBZ = value
                     lon, lat = wrl.georef.polar2lonlat(rng, azi, (radar_longitude, radar_latitude))
 
                     # realizar los redondeos
