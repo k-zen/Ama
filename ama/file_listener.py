@@ -42,8 +42,8 @@ class FileListener(FileSystemEventHandler):
         self.layer = layer
 
     def on_created(self, event):
-        # dormir la hebra por 0 segundos, para esperar que el archivo sea copiado por completo.
-        time.sleep(0)
+        # dormir la hebra por 45 segundos, para esperar que el archivo sea copiado por completo.
+        time.sleep(45)
 
         print(Colors.OKGREEN + "\tINFO: Detectado archivo nuevo. Procesando..." + Colors.ENDC)
         if Utils.should_process_file(event.src_path, Processor.FILE_SIZE_LIMIT, True):
