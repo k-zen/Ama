@@ -6,13 +6,15 @@
 ==          http://apkc.net/_4              ==
 == Autor: Andreas P. Koenzen <akc@apkc.net> ==
 ==------------------------------------------==
+
 Uso:
 ====
 ama [--process-reflectivity] [-t=target] [-d=destination]
     [--process-rainfall] [-t=target] [-d=destination]
-    [--correlate-dbz-location] [-f=filename] [-d=destination] [-l=0] [--all]
+    [--correlate-dbz-location] [-f=filename] [-d=destination] [-l=0] [--all] [--json-test]
     [--show-data] [-t=target]
     [--run] [-l=0]
+    [--dbscan] [-f=filename] [-l=0] [--test]
 
 Opciones:
 =========
@@ -20,11 +22,12 @@ Opciones:
                              y genera imagenes de reflectividad
     --process-rainfall       procesa un directorio de datos de forma recursiva
                              y genera imagenes de profundidad de lluvia
-    --correlate-dbz-location procesa un archivo de datos y correlaciona dbZ con
+    --correlate-dbz-location procesa un archivo de datos y correlaciona dBZ con
                              coordenadas geograficas
     --show-data              muestra los datos en pantalla (DEBUG)
     --run                    lanza un proceso que escucha por el ultimo archivo
                              generado por el radar, y lo procesa
+    --dbscan                 procesa datos utilizando el algoritmo DBSCAN
 
     ---
 
@@ -38,22 +41,25 @@ Opciones:
 
     ---
 
-    --all    Procesar todos los archivos en un directorio.
+    --all       Procesar todos los archivos en un directorio.
+    --test      Habilitar modo pruebas/verificación.
+    --json-test Habilitar modo pruebas/verificación con generación del archivo JSON.
 
 Banderas:
 =========
-    --help  muestra este mensaje de ayuda
+    --help muestra este mensaje de ayuda
 """
 
+import ama.utils as utils
+import ama.dbscan_processor as dbscan
+import ama.processor as processor
+import ama.file_listener as listener
+import ama.show_data as show
 import getopt
 import os
 import sys
 import time
 
-from ama.file_listener import FileListener
-from ama.processor import Processor
-from ama.show_data import ShowData
-from ama.utils import Colors
 from watchdog.observers import Observer
 
 __author__ = "Andreas P. Koenzen"
@@ -82,6 +88,8 @@ def main(argv=None):
     filename = ""
     layer = 0
     process_all = False
+    test = False
+    json_test = False
 
     if argv is None:
         argv = sys.argv
@@ -97,7 +105,10 @@ def main(argv=None):
                     "correlate-dbz-location",
                     "show-data",
                     "run",
-                    "all"
+                    "all",
+                    "test",
+                    "json-test",
+                    "dbscan"
                 ]
             )
             if not opts:
@@ -121,6 +132,8 @@ def main(argv=None):
                 command = 4
             elif opt == "--run":
                 command = 5
+            elif opt == "--dbscan":
+                command = 6
             elif opt == "-t":
                 target = arg
             elif opt == "-d":
@@ -131,37 +144,41 @@ def main(argv=None):
                 layer = int(arg)
             elif opt == "--all":
                 process_all = True
+            elif opt == "--test":
+                test = True
+            elif opt == "--json-test":
+                json_test = True
 
         # tomar la decision.
         if command == 1:
             if not target and not destination:
-                print(Colors.FAIL + "\tERROR: Origen y destino no definidos." + Colors.ENDC)
+                print(utils.Colors.FAIL + "\tERROR: Origen y destino no definidos." + utils.Colors.ENDC)
                 return 2
 
-            Processor().process_directory_generate_raw_images_from_reflectivity(target, destination)
+            processor.Processor().process_directory_generate_raw_images_from_reflectivity(target, destination)
         elif command == 2:
             if not target and not destination:
-                print(Colors.FAIL + "\tERROR: Origen y destino no definidos." + Colors.ENDC)
+                print(utils.Colors.FAIL + "\tERROR: Origen y destino no definidos." + utils.Colors.ENDC)
                 return 2
 
-            Processor().process_directory_generate_raw_images_from_rainfall_intensity(target, destination)
+            processor.Processor().process_directory_generate_raw_images_from_rainfall_intensity(target, destination)
         elif command == 3:
             if not filename and not destination:
-                print(Colors.FAIL + "\tERROR: Nombre de archivo y destino no definidos." + Colors.ENDC)
+                print(utils.Colors.FAIL + "\tERROR: Nombre de archivo y destino no definidos." + utils.Colors.ENDC)
                 return 2
 
-            Processor().correlate_dbz_to_location(filename, destination, process_all, layer)
+            processor.Processor().correlate_dbz_to_location(filename, destination, process_all, layer, json_test)
         elif command == 4:
             if not target:
-                print(Colors.FAIL + "\tERROR: Origen no definido." + Colors.ENDC)
+                print(utils.Colors.FAIL + "\tERROR: Origen no definido." + utils.Colors.ENDC)
                 return 2
 
-            ShowData.show_data(target)
+            show.ShowData.show_data(target)
         elif command == 5:
             directory = os.path.join(os.environ["WRADLIB_DATA"], target)
-            print(Colors.OKBLUE + "\tINFO: Escuchando por adiciones en {0}.".format(directory) + Colors.ENDC)
+            print(utils.Colors.OKBLUE + "\tINFO: Escuchando por adiciones en {0}.".format(directory) + utils.Colors.ENDC)
 
-            event_handler = FileListener(layer)
+            event_handler = listener.FileListener(layer)
             observer = Observer()
             observer.schedule(event_handler, path=directory, recursive=False)
             observer.start()  # lanzar el proceso que observa adiciones en el directorio.
@@ -171,9 +188,15 @@ def main(argv=None):
             except KeyboardInterrupt:
                 observer.stop()  # agregar opcion de parar el observador con Ctrl+C.
             observer.join()
+        elif command == 6:
+            if not filename:
+                print(utils.Colors.FAIL + "\tERROR: Nombre de archivo no especificado." + utils.Colors.ENDC)
+                return 2
+
+            dbscan.DBSCANProcessor().plot_all_points(filename, layer, test)
     except Usage, err:
-        print(Colors.FAIL + "\tERROR: {0}".format(err.msg) + Colors.ENDC)
-        print(Colors.HEADER + "\tINFO: para ayuda utilizar --help" + Colors.ENDC)
+        print(utils.Colors.FAIL + "\tERROR: {0}".format(err.msg) + utils.Colors.ENDC)
+        print(utils.Colors.HEADER + "\tINFO: para ayuda utilizar --help" + utils.Colors.ENDC)
         return 2
 
 

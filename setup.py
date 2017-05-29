@@ -21,6 +21,10 @@ setup(
         "netCDF4 >= 1.0",
         "gdal >= 1.9",
         "watchdog >= 0.8.3",
-        "requests >= 2.13.0"
+        "requests >= 2.13.0",
+        "geopy",
+        "scikit-learn",
+        "shapely",
+        "pandas"
     ]
 )

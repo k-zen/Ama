@@ -10,8 +10,8 @@ Clase perteneciente al módulo de procesamiento de datos e inferencias Ama.
 .. moduleauthor:: Andreas P. Koenzen <akc@apkc.net>
 """
 
-from ama.processor import Processor
-from ama.utils import Colors
+import ama.utils as utils
+import ama.processor as processor
 
 __author__ = "Andreas P. Koenzen"
 __copyright__ = "Copyright 2016, Proyecto de Tesis / Universidad Católica de Asunción."
@@ -40,9 +40,9 @@ class ShowData:
 
         :return: void
         """
-        data, metadata = Processor().process(filename)
+        data, metadata = processor.Processor().process(filename)
 
-        print(Colors.HEADER + "METADATOS" + Colors.ENDC)
+        print(utils.Colors.HEADER + "METADATOS" + utils.Colors.ENDC)
         for k in range(0, 11):
             key = u"SCAN{0}".format(k)
             if key in metadata:
@@ -53,7 +53,7 @@ class ShowData:
         print(metadata)
         print("")
 
-        print(Colors.HEADER + "DATOS" + Colors.ENDC)
+        print(utils.Colors.HEADER + "DATOS" + utils.Colors.ENDC)
         for k in range(0, 11):
             key = u"SCAN{0}".format(k)
             if key in metadata:
