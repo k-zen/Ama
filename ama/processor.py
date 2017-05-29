@@ -43,7 +43,7 @@ class Processor:
         pass
 
     ###### OPCIONES MISCELANEAS ######
-    DEBUG = True
+    DEBUG = False
     """
     boolean: Bandera para habilitar/deshabilitar modo DEBUG.
     """
@@ -309,7 +309,7 @@ class Processor:
         ===========================
         {
             "fechaCarga": "2017-04-17T16:35:01.150Z",
-            "notificar": 0,
+            "notificar": True | False,
             "centroides": ["-25.23864:-57.52254", ..., "-25.23864:-57.52254"],
             "arrayDatos": ["6.0;-25.23864:-57.52254", ..., "7;-25.23864:-57.52254"]
         }
@@ -371,7 +371,7 @@ class Processor:
                     cdata += line
                 cdata += "]}"
 
-                if self.DEBUG == 1:
+                if test == 1:
                     dfile.write("{0}".format(cdata))
 
                 # insertar los datos.
