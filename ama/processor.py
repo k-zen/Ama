@@ -347,7 +347,7 @@ class Processor:
                 for i, (centroid_lat, centroid_lon, centroid_dBZ) in enumerate(centroids):
                     if haversine((radar_coordinates[0], radar_coordinates[1]), (centroid_lat, centroid_lon)) <= 50:
                         sendNotifications = True
-                cdata += "\"notificar\":{0},".format(sendNotifications)
+                cdata += "\"notificar\":\"{0}\",".format(sendNotifications)
 
                 # agregar los centroides con sus coordenadas.
                 cdata += "\"centroides\":["
