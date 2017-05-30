@@ -10,6 +10,8 @@ Funciones:
     ubicación geográfica determinada en coordenadas geográficas (Lat/Long). Puede generar un archivo
     resultante o llamar a un Web Service.
 Cambios
+    -- 30/05/2017
+        * Correcciones menores.
     -- 29/05/2017
         * Agregado soporte para detectar clusters de tormenta a través del algoritmo DBSCAN.
     -- 20/05/2017

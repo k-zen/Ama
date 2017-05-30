@@ -30,14 +30,10 @@ class Colors:
     def __init__(self):
         pass
 
-    HEADER = "\033[95m"
-    OKBLUE = "\033[94m"
-    OKGREEN = "\033[92m"
+    BOLD = "\033[1m"
     WARNING = "\033[93m"
     FAIL = "\033[91m"
     ENDC = "\033[0m"
-    BOLD = "\033[1m"
-    UNDERLINE = "\033[4m"
 
 
 class Utils:
@@ -85,7 +81,7 @@ class Utils:
     def deduplicate_correlated_data(ri, lat, lon, data):
         for i, (r, la, lo) in enumerate(data):
             if la == lat and lo == lon:
-                print(Colors.WARNING + "\tWARN: Dato duplicado => RI={0:.2f}={1:.2f} Lat={2:.5f}={3:.5f} Long={4:.5f}={5:.5f}".format(
+                print(Colors.WARNING + "WARN: Dato duplicado => RI={0:.2f}={1:.2f} Lat={2:.5f}={3:.5f} Long={4:.5f}={5:.5f}".format(
                     r, ri, la, lat, lo, lon) + Colors.ENDC)
                 return False
 

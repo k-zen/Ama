@@ -152,31 +152,31 @@ def main(argv=None):
         # tomar la decision.
         if command == 1:
             if not target and not destination:
-                print(utils.Colors.FAIL + "\tERROR: Origen y destino no definidos." + utils.Colors.ENDC)
+                print(utils.Colors.FAIL + "ERROR: Origen y destino no definidos." + utils.Colors.ENDC)
                 return 2
 
             processor.Processor().process_directory_generate_raw_images_from_reflectivity(target, destination)
         elif command == 2:
             if not target and not destination:
-                print(utils.Colors.FAIL + "\tERROR: Origen y destino no definidos." + utils.Colors.ENDC)
+                print(utils.Colors.FAIL + "ERROR: Origen y destino no definidos." + utils.Colors.ENDC)
                 return 2
 
             processor.Processor().process_directory_generate_raw_images_from_rainfall_intensity(target, destination)
         elif command == 3:
             if not filename and not destination:
-                print(utils.Colors.FAIL + "\tERROR: Nombre de archivo y destino no definidos." + utils.Colors.ENDC)
+                print(utils.Colors.FAIL + "ERROR: Nombre de archivo y destino no definidos." + utils.Colors.ENDC)
                 return 2
 
             processor.Processor().correlate_dbz_to_location(filename, destination, process_all, layer, json_test)
         elif command == 4:
             if not target:
-                print(utils.Colors.FAIL + "\tERROR: Origen no definido." + utils.Colors.ENDC)
+                print(utils.Colors.FAIL + "ERROR: Origen no definido." + utils.Colors.ENDC)
                 return 2
 
             show.ShowData.show_data(target)
         elif command == 5:
             directory = os.path.join(os.environ["WRADLIB_DATA"], target)
-            print(utils.Colors.OKBLUE + "\tINFO: Escuchando por adiciones en {0}.".format(directory) + utils.Colors.ENDC)
+            print(utils.Colors.BOLD + "INFO: Escuchando por adiciones en {0}.".format(directory) + utils.Colors.ENDC)
 
             event_handler = listener.FileListener(layer)
             observer = Observer()
@@ -190,13 +190,13 @@ def main(argv=None):
             observer.join()
         elif command == 6:
             if not filename:
-                print(utils.Colors.FAIL + "\tERROR: Nombre de archivo no especificado." + utils.Colors.ENDC)
+                print(utils.Colors.FAIL + "ERROR: Nombre de archivo no especificado." + utils.Colors.ENDC)
                 return 2
 
             dbscan.DBSCANProcessor().plot_all_points(filename, layer, test)
     except Usage, err:
-        print(utils.Colors.FAIL + "\tERROR: {0}".format(err.msg) + utils.Colors.ENDC)
-        print(utils.Colors.HEADER + "\tINFO: para ayuda utilizar --help" + utils.Colors.ENDC)
+        print(utils.Colors.FAIL + "ERROR: {0}".format(err.msg) + utils.Colors.ENDC)
+        print(utils.Colors.BOLD + "INFO: para ayuda utilizar --help" + utils.Colors.ENDC)
         return 2
 
 

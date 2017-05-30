@@ -44,18 +44,18 @@ class FileListener(FileSystemEventHandler):
         # dormir la hebra por 15 segundos, para esperar que el archivo sea copiado por completo.
         time.sleep(15)
 
-        print(utils.Colors.OKGREEN + "\tINFO: Detectado archivo nuevo. Procesando..." + utils.Colors.ENDC)
+        print(utils.Colors.BOLD + "INFO: Detectado archivo nuevo. Procesando..." + utils.Colors.ENDC)
         if utils.Utils.should_process_file(event.src_path, processor.Processor.FILE_SIZE_LIMIT, True):
-            print(utils.Colors.OKGREEN + "\t\tARCHIVO: {0}".format(event.src_path) + utils.Colors.ENDC)
+            print(utils.Colors.BOLD + "ARCHIVO: {0}".format(event.src_path) + utils.Colors.ENDC)
             # procesar el archivo.
             processor.Processor().single_correlate_dbz_to_location_to_json(event.src_path, self.layer)
         else:
-            print(utils.Colors.FAIL + "\tERROR: El archivo detectado no cumple con los requisitos de procesamiento." + utils.Colors.ENDC)
-            print(utils.Colors.FAIL + "\t\tARCHIVO: {0}".format(event.src_path) + utils.Colors.ENDC)
+            print(utils.Colors.FAIL + "ERROR: El archivo detectado no cumple con los requisitos de procesamiento." + utils.Colors.ENDC)
+            print(utils.Colors.FAIL + "ARCHIVO: {0}".format(event.src_path) + utils.Colors.ENDC)
             # siempre borrar el archivo que fue procesado.
             if processor.Processor.SHOULD_REMOVE_PROCESSED_FILES == 1:
                 try:
                     os.remove(event.src_path)
                 except Exception as e:
-                    print(utils.Colors.FAIL + "\tERROR: Borrando archivo original." + utils.Colors.ENDC)
-                    print(utils.Colors.FAIL + "\t\tDESC: {0}".format(e) + utils.Colors.ENDC)
+                    print(utils.Colors.FAIL + "ERROR: Borrando archivo original." + utils.Colors.ENDC)
+                    print(utils.Colors.FAIL + "DESC: {0}".format(e) + utils.Colors.ENDC)

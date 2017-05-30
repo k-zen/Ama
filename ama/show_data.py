@@ -42,7 +42,7 @@ class ShowData:
         """
         data, metadata = processor.Processor().process(filename)
 
-        print(utils.Colors.HEADER + "METADATOS" + utils.Colors.ENDC)
+        print(utils.Colors.BOLD + "METADATOS" + utils.Colors.ENDC)
         for k in range(0, 11):
             key = u"SCAN{0}".format(k)
             if key in metadata:
@@ -53,7 +53,7 @@ class ShowData:
         print(metadata)
         print("")
 
-        print(utils.Colors.HEADER + "DATOS" + utils.Colors.ENDC)
+        print(utils.Colors.BOLD + "DATOS" + utils.Colors.ENDC)
         for k in range(0, 11):
             key = u"SCAN{0}".format(k)
             if key in metadata:

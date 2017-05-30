@@ -88,7 +88,7 @@ class Processor:
         data, metadata = wrl.io.read_GAMIC_hdf5(filename)
         end = time.time()
 
-        print(utils.Colors.OKGREEN + "INFO: Procesado \"{0}\" en {1} segundos.".format(filename, (end - start)) + utils.Colors.ENDC)
+        print(utils.Colors.BOLD + "INFO: Procesado \"{0}\" en {1} segundos.".format(filename, (end - start)) + utils.Colors.ENDC)
 
         return data, metadata
 
@@ -116,7 +116,7 @@ class Processor:
                 wrl.vis.plot_cg_ppi(data[u"SCAN0"][u"Z"]["data"], fig=fig)
 
                 if not os.path.exists(destination):
-                    print(utils.Colors.WARNING + "\tWARN: Destino no existe, creando ..." + utils.Colors.ENDC)
+                    print(utils.Colors.WARNING + "WARN: Destino no existe, creando ..." + utils.Colors.ENDC)
                     os.makedirs(destination)
 
                 clean_filename = os.path.splitext(ntpath.basename(item))[0]
@@ -134,7 +134,7 @@ class Processor:
                     for index, item in enumerate(matches):
                         print("{0} => {1}".format(index, os.path.splitext(ntpath.basename(item))[0]))
         else:
-            print(utils.Colors.FAIL + "\tERROR: No hay archivos para procesar en *{0}*!".format(
+            print(utils.Colors.FAIL + "ERROR: No hay archivos para procesar en *{0}*!".format(
                 os.environ["WRADLIB_DATA"] + origin) + utils.Colors.ENDC)
 
     def process_directory_generate_raw_images_from_rainfall_intensity(self, origin, destination):
@@ -173,7 +173,7 @@ class Processor:
                 pl.grid(color="grey")
 
                 if not os.path.exists(destination):
-                    print(utils.Colors.WARNING + "\tWARN: Destino no existe, creando ..." + utils.Colors.ENDC)
+                    print(utils.Colors.WARNING + "WARN: Destino no existe, creando ..." + utils.Colors.ENDC)
                     os.makedirs(destination)
 
                 clean_filename = os.path.splitext(ntpath.basename(item))[0]
@@ -191,7 +191,7 @@ class Processor:
                     for index, item in enumerate(matches):
                         print("{0} => {1}".format(index, os.path.splitext(ntpath.basename(item))[0]))
         else:
-            print(utils.Colors.FAIL + "\tERROR: No hay archivos para procesar en *{0}*!".format(
+            print(utils.Colors.FAIL + "ERROR: No hay archivos para procesar en *{0}*!".format(
                 os.environ["WRADLIB_DATA"] + origin) + utils.Colors.ENDC)
 
     def single_correlate_dbz_to_location(self, filename, destination, layer):
@@ -256,9 +256,9 @@ class Processor:
 
         end = time.time()
 
-        print(utils.Colors.HEADER + "---" + utils.Colors.ENDC)
-        print(utils.Colors.HEADER + "Tamaño Datos Enviados: {0}kb".format(sys.getsizeof(cdata) / 1024) + utils.Colors.ENDC)
-        print(utils.Colors.HEADER + "Tiempo de Procesamiento: {0:.1f} minutos".format((end - start) / 60) + utils.Colors.ENDC)
+        print(utils.Colors.BOLD + "---" + utils.Colors.ENDC)
+        print(utils.Colors.BOLD + "Tamaño Datos Enviados: {0}kb".format(sys.getsizeof(cdata) / 1024) + utils.Colors.ENDC)
+        print(utils.Colors.BOLD + "Tiempo de Procesamiento: {0:.1f} minutos".format((end - start) / 60) + utils.Colors.ENDC)
 
     def correlate_dbz_to_location(self, filename, destination, process_all, layer, json_test=False):
         """
@@ -337,20 +337,21 @@ class Processor:
             #
             original, clustered, centroids, scan_time, radar_coordinates = dbscan.DBSCANProcessor().detect_dbz_clusters(filename, layer,
                                                                                                                         test)
-            if len(clustered) > 0:
-                # construir el texto JSON.
-                # fecha
-                cdata += "{{\"fechaCarga\":\"{0}\",".format(scan_time)
+            # construir el texto JSON.
+            # fecha
+            cdata += "{{\"fechaCarga\":\"{0}\",".format(scan_time)
 
-                # detectar si cualquiera de los centroides está dentro del espacio radial de notificaciones.
-                sendNotifications = False
+            # detectar si cualquiera de los centroides está dentro del espacio radial de notificaciones.
+            sendNotifications = False
+            if len(centroids) > 0:
                 for i, (centroid_lat, centroid_lon, centroid_dBZ) in enumerate(centroids):
                     if haversine((radar_coordinates[0], radar_coordinates[1]), (centroid_lat, centroid_lon)) <= 50:
                         sendNotifications = True
-                cdata += "\"notificar\":\"{0}\",".format(sendNotifications)
+            cdata += "\"notificar\":\"{0}\",".format(sendNotifications)
 
-                # agregar los centroides con sus coordenadas.
-                cdata += "\"centroides\":["
+            # agregar los centroides con sus coordenadas.
+            cdata += "\"centroides\":["
+            if len(centroids) > 0:
                 for i, (centroid_lat, centroid_lon, centroid_dBZ) in enumerate(centroids):
                     line = "\"{0:.5f}:{1:.5f}\",".format(centroid_lat, centroid_lon)
                     # si es el último registro remover la coma al final.
@@ -358,10 +359,11 @@ class Processor:
                         line = line[:-1]
                     # cuerpo
                     cdata += line
-                cdata += "],"
+            cdata += "],"
 
-                # agregar las dBZ con sus coordenadas.
-                cdata += "\"arrayDatos\":["
+            # agregar las dBZ con sus coordenadas.
+            cdata += "\"arrayDatos\":["
+            if len(clustered) > 0:
                 for i, (lat, lon, dBZ) in enumerate(sorted(clustered, key=lambda tup: tup[2])):  # Ordenar por dBZ (índice 2).
                     line = "\"{0:.1f};{1:.5f}:{2:.5f}\",".format(dBZ, lat, lon)
                     # si es el último registro remover la coma al final.
@@ -369,33 +371,37 @@ class Processor:
                         line = line[:-1]
                     # cuerpo
                     cdata += line
-                cdata += "]}"
+            cdata += "]}"
 
-                if test == 1:
-                    dfile.write("{0}".format(cdata))
+            if test == 1:
+                dfile.write("{0}".format(cdata))
 
-                # insertar los datos.
-                # IMPORTANTE! Añadir timeout de 30 segundos para el pedido.
-                if test == 0:
-                    url = "http://127.0.0.1:80/ama/insertar"
-                    headers = {'Content-type': 'application/json'}
-                    response = requests.post(url, data=cdata, headers=headers, timeout=30)
-                    if response.status_code != requests.codes.ok:
-                        print(utils.Colors.FAIL + "\tERROR: Insertando datos en WS." + utils.Colors.ENDC)
-                    else:
-                        print(utils.Colors.OKGREEN + "\tINFO: Datos insertados." + utils.Colors.ENDC)
+            # insertar los datos.
+            # IMPORTANTE! Añadir timeout de 30 segundos para el pedido.
+            if test == 0:
+                url = "http://127.0.0.1:80/ama/insertar"
+                headers = {'Content-type': 'application/json'}
+                response = requests.post(url, data=cdata, headers=headers, timeout=30)
+                if response.status_code != requests.codes.ok:
+                    print(utils.Colors.FAIL + "ERROR: Insertando datos en WS." + utils.Colors.ENDC)
+                else:
+                    print(utils.Colors.BOLD + "INFO: Datos insertados." + utils.Colors.ENDC)
 
-                end = time.time()
+            end = time.time()
 
-                print(utils.Colors.HEADER + "---" + utils.Colors.ENDC)
-                print(utils.Colors.HEADER + "Tamaño Datos Enviados: {0}kb".format(sys.getsizeof(cdata) / 1024) + utils.Colors.ENDC)
-                print(utils.Colors.HEADER + "Tiempo de Procesamiento: {0:.1f} segundos".format((end - start)) + utils.Colors.ENDC)
-            else:
-                print(utils.Colors.HEADER + "---" + utils.Colors.ENDC)
-                print(utils.Colors.HEADER + "No se detectaron clusters. No se enviaron datos al Controlador." + utils.Colors.ENDC)
+            print(utils.Colors.BOLD + "---" + utils.Colors.ENDC)
+            print(utils.Colors.BOLD + "Tamaño Datos Enviados: {0}kb".format(sys.getsizeof(cdata) / 1024) + utils.Colors.ENDC)
+            print(utils.Colors.BOLD + "Tiempo de Procesamiento: {0:.1f} segundos".format((end - start)) + utils.Colors.ENDC)
+
+            if len(clustered) == 0:
+                print(utils.Colors.BOLD + "---" + utils.Colors.ENDC)
+                print(utils.Colors.BOLD + "No se detectaron clusters. Se enviaron datos vacios al Controlador." + utils.Colors.ENDC)
+                print(utils.Colors.BOLD + "Datos:" + utils.Colors.ENDC)
+                print(utils.Colors.BOLD + "======" + utils.Colors.ENDC)
+                print(utils.Colors.BOLD + "{0}".format(cdata) + utils.Colors.ENDC)
         except Exception as e:
-            print(utils.Colors.FAIL + "\tERROR: Corriendo trabajo de inserción." + utils.Colors.ENDC)
-            print(utils.Colors.FAIL + "\t\tDESC: {0}".format(e) + utils.Colors.ENDC)
+            print(utils.Colors.FAIL + "ERROR: Corriendo trabajo de inserción." + utils.Colors.ENDC)
+            print(utils.Colors.FAIL + "DESC: {0}".format(e) + utils.Colors.ENDC)
         finally:
             dfile.close()  # Siempre cerrar el archivo con datos de debug.
 
@@ -404,5 +410,5 @@ class Processor:
                 try:
                     os.remove(filename)
                 except Exception as e:
-                    print(utils.Colors.FAIL + "\tERROR: Borrando archivo original." + utils.Colors.ENDC)
-                    print(utils.Colors.FAIL + "\t\tDESC: {0}".format(e) + utils.Colors.ENDC)
+                    print(utils.Colors.FAIL + "ERROR: Borrando archivo original." + utils.Colors.ENDC)
+                    print(utils.Colors.FAIL + "DESC: {0}".format(e) + utils.Colors.ENDC)
