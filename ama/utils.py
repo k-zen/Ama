@@ -10,7 +10,6 @@ Clase perteneciente al módulo de procesamiento de datos e inferencias Ama.
 .. moduleauthor:: Andreas P. Koenzen <akc@apkc.net>
 """
 
-import ama.processor as processor
 import os
 
 __author__ = "Andreas P. Koenzen"
@@ -102,6 +101,8 @@ class Utils:
 
         :return: True si el archivo debe ser procesado, False de lo contrario.
         """
+
+        import ama.processor as processor
 
         if filename.endswith(".mvol"):
             if double_polarization_mode == False:
