@@ -10,6 +10,7 @@ Clase perteneciente al módulo de procesamiento de datos e inferencias Ama.
 .. moduleauthor:: Andreas P. Koenzen <akc@apkc.net>
 """
 
+import ama.processor as processor
 import os
 
 __author__ = "Andreas P. Koenzen"
@@ -88,24 +89,46 @@ class Utils:
         return True
 
     @staticmethod
-    def should_process_file(filename, file_size_limit, isDoppler):
+    def should_process_file(filename, file_size_limit, double_polarization_mode):
         """
         Chequea si un archivo cumple con las condiciones para ser procesado.
 
         :param filename: El archivo a procesar.
         :param file_size_limit: El tamaño máximo de un archivo a procesar. \
             Los archivos que sobrepasen el tamaño serán obviados.
-        :param isDoppler: Si el archivo a procesar está en modo Simple o Doppler.
+        :param double_polarization_mode: Si el modo del archivo es de "Polarización \
+            Doble". En este modo los archivos son mayores en tamaño, debido a que \
+            contienen varias elevaciones del Radar.
 
         :return: True si el archivo debe ser procesado, False de lo contrario.
         """
 
         if filename.endswith(".mvol"):
-            if isDoppler == False:
+            if double_polarization_mode == False:
                 if os.stat(filename).st_size < file_size_limit:
                     return True
             else:
+                #
+                # Aplicar los chequeos.
+                #
                 if os.stat(filename).st_size > file_size_limit:
-                    return True
+                    #
+                    # Abrir el archivo y ver si es de hecho de "Polarización Doble".
+                    #
+                    print(Colors.BOLD + "INFO: Verificando si es de *Polarización Doble*..." + Colors.ENDC)
+                    data, metadata = processor.Processor().process(filename, False)
+                    counter = 0
+                    for k in range(0, 11):
+                        key = u"SCAN{0}".format(k)
+                        if key in metadata:
+                            counter += 1
+
+                    #
+                    # Solo si la cantidad de *Metadatos* es mayor que 1 el archivo puede ser de
+                    # "Polarización Doble". De lo contrario significa que solo posee una capa de datos.
+                    #
+                    if counter > 1:
+                        print(Colors.BOLD + "INFO: Archivo si es de *Polarización Doble*. Procesando..." + Colors.ENDC)
+                        return True
 
         return False

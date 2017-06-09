@@ -10,6 +10,8 @@ Funciones:
     ubicación geográfica determinada en coordenadas geográficas (Lat/Long). Puede generar un archivo
     resultante o llamar a un Web Service.
 Cambios
+    -- 09/06/2017
+        * Agregado soporte para detectar si el archivo a procesar es de *Polaridad Simple o Doble*.
     -- 30/05/2017
         * Correcciones menores.
     -- 29/05/2017

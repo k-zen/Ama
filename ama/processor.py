@@ -47,7 +47,7 @@ class Processor:
     """
     boolean: Bandera para habilitar/deshabilitar modo DEBUG.
     """
-    FILE_SIZE_LIMIT = 4 * 1024 * 1024  # 4MB para los archivos del GAMIC con zoom out.
+    FILE_SIZE_LIMIT = 2 * 1024 * 1024  # 2MB para los archivos del GAMIC con zoom out.
     """
     int: Tamaño máximo de archivos a procesar. Todos los archivos que sobrepasen este tamaño serán obviados.
     """
@@ -71,15 +71,16 @@ class Processor:
     """
 
     @staticmethod
-    def process(filename):
+    def process(filename, show_info=True):
         """
         Procesa un archivo de datos de radar en formato GAMIC HDF5 y devuelve
         los datos.
         
-        Esta función esta diseñada para archivos de modalidad Simple y Doppler.
+        Esta función esta diseñada para archivos de "Polaridad Simple y Doble".
 
         :param filename: El nombre del archivo a procesar. El formato debe ser \
             *WRADLIB_DATA/<filename>*.
+        :param show_info: Si debe mostrar mensajes de información o no.
 
         :return: Los datos de radar procesados.
         """
@@ -88,7 +89,8 @@ class Processor:
         data, metadata = wrl.io.read_GAMIC_hdf5(filename)
         end = time.time()
 
-        print(utils.Colors.BOLD + "INFO: Procesado \"{0}\" en {1} segundos.".format(filename, (end - start)) + utils.Colors.ENDC)
+        if show_info == 1:
+            print(utils.Colors.BOLD + "INFO: Procesado \"{0}\" en {1} segundos.".format(filename, (end - start)) + utils.Colors.ENDC)
 
         return data, metadata
 
@@ -98,7 +100,7 @@ class Processor:
         de datos de forma recursiva y genera imagenes para cada set de datos
         utilizando los datos de reflectividad.
         
-        Esta función esta diseñada para archivos de modalidad Simple.
+        Esta función esta diseñada para archivos de "Polaridad Simple".
 
         :param origin: El directorio origen de datos.
         :param destination: El directorio destino de las imagenes.
@@ -143,7 +145,7 @@ class Processor:
         de datos de forma recursiva y genera imagenes para cada set de datos
         utilizando los datos de intensidad de lluvia.
 
-        Esta función esta diseñada para archivos de modalidad Simple.
+        Esta función esta diseñada para archivos de "Polaridad Simple".
 
         :param origin: El directorio origen de datos.
         :param destination: El directorio destino de las imagenes.
@@ -198,7 +200,7 @@ class Processor:
         """
         Esta funcion realiza la correlacion entre dBZ y sus coordenadas geograficas en el mapa.
         
-        Esta función esta diseñada para archivos de modalidad Simple y Doppler.
+        Esta función esta diseñada para archivos de "Polaridad Simple y Doble".
 
         Formato del archivo a generar:
         ==============================
@@ -265,7 +267,7 @@ class Processor:
         Esta funcion procesa todo un directorio de archivos y por cada uno realiza la 
         correlacion entre dBZ y sus coordenadas geograficas en el mapa.
         
-        Esta función esta diseñada para archivos de modalidad Simple y Doppler.
+        Esta función esta diseñada para archivos de "Polaridad Simple y Doble".
 
         Formato del archivo a generar:
         ==============================
@@ -303,7 +305,7 @@ class Processor:
         """
         Esta funcion realiza la correlacion entre dBZ y sus coordenadas geograficas en el mapa.
         
-        Esta función esta diseñada para archivos de modalidad Simple y Doppler.
+        Esta función esta diseñada para archivos de "Polaridad Simple y Doble".
 
         Formato del JSON a generar:
         ===========================
