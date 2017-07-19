@@ -381,8 +381,11 @@ class Processor:
             # insertar los datos.
             # IMPORTANTE! Añadir timeout de 30 segundos para el pedido.
             if test == 0:
-                url = "http://127.0.0.1:80/ama/insertar"
-                headers = {'Content-type': 'application/json'}
+                url = "http://127.0.0.1:80/ama/datos/insertar"
+                headers = {
+                    'Content-type': 'application/json',
+                    'Authorization': 'Basic ' + 'Ama@admin:amaPass2017'.encode('base64')
+                }
                 response = requests.post(url, data=cdata, headers=headers, timeout=30)
                 if response.status_code != requests.codes.ok:
                     print(utils.Colors.FAIL + "ERROR: Insertando datos en WS." + utils.Colors.ENDC)
