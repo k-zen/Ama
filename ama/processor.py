@@ -11,6 +11,7 @@ Clase perteneciente al módulo de procesamiento de datos e inferencias Ama.
 """
 
 import ama.utils as utils
+import base64
 import matplotlib.pyplot as plt
 import ntpath
 import numpy as np
@@ -384,7 +385,7 @@ class Processor:
                 url = "http://127.0.0.1:80/ama/datos/insertar"
                 headers = {
                     'Content-type': 'application/json',
-                    'Authorization': 'Basic ' + 'Ama@admin:amaPass2017'.encode('base64')
+                    'Authorization': 'Basic ' + base64.b64encode('Ama@admin:amaPass2017')
                 }
                 response = requests.post(url, data=cdata, headers=headers, timeout=30)
                 if response.status_code != requests.codes.ok:
